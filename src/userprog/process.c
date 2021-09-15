@@ -20,6 +20,8 @@
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static void parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]);
+static void push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -90,7 +92,7 @@ process_wait (tid_t child_tid UNUSED)
 {
   // SG_PRJ1 TODO_DONE: if you want debugging, insert long time loop.
   int i;
-  for (i=0; i<9199999999;i++); // temporal busy wait code
+  for (i=0; i<9199999999ULL;i++); // temporal busy wait code
   // 1억이면 충분하겠다 싶었는데, 충분하지 않았나봄.
   // 숫자 높이니까 제대로 작동하네...
   return -1;
@@ -206,12 +208,72 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
 
+void parse_cmdline(char *cmdline, int *argc_p, char *argv[128]) {
+    char* cur, *rest;
+    int i = 0;
+
+    cur = strtok_r(cmdline, " ", &rest);
+    while(cur != NULL){
+        argv[i++] = cur;
+        cur = strtok_r(NULL, " ", &rest);
+    }
+
+    *argc_p = i;
+}
+void
+push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp){
+    ASSERT( argc >= 0 );
+
+    int i, t;
+    void* argv_addr[CMD_ARGC_LIMIT];
+    void* cur_esp = *esp;
+
+    // push argv to stack
+    i = argc;
+    while(i--){
+        t = strlen(argv[i])+1;
+        cur_esp -= t;
+        memcpy(cur_esp, argv[i], t);
+        argv_addr[i] = cur_esp;
+    }
+
+    // word align
+    cur_esp = (void*)((unsigned int)(cur_esp) & 0xfffffffc);
+
+    // last null
+    cur_esp -= 4;
+    memset(cur_esp, 0, 4);
+
+    // argv_addr -> stack
+    i = argc;
+    while(i--){
+        cur_esp -= 4;
+        memcpy(cur_esp, &(argv_addr[i]), 4);
+    }
+
+    // setting **argv (addr of stack, esp)
+    argv_addr[argc] = cur_esp;
+    cur_esp -= 4;
+    // memcpy(cur_esp, &(cur_esp)+4, 4);
+    memcpy(cur_esp, &(argv_addr[argc]), 4);
+
+    // setting argc
+    cur_esp -= 4;
+    memcpy(cur_esp, &argc, 4);
+
+    // setting ret addr
+    cur_esp -= 4;
+    memset(cur_esp, 0, 4);
+
+    *esp = cur_esp;
+}
+
 /* Loads an ELF executable from FILE_NAME into the current thread.
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 bool
-load (const char *file_name, void (**eip) (void), void **esp) 
+load (const char *file_name, void (**eip) (void), void **esp)
 {
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
@@ -232,15 +294,25 @@ load (const char *file_name, void (**eip) (void), void **esp)
   // (You should finish to implement process_wait() later)
   // ....
   printf("i want parse file name\n");
+  int cmd_argc = 0;
+  char* cmd_argv[CMD_ARGC_LIMIT];
+  char* cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
+  memcpy(cmd_cpy, file_name, strlen(file_name)+1);
+
+  parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
+
+  printf("parse file end.\n");
+  printf("argc = %d \n", cmd_argc);
+  printf("argv[0] = %s\n", cmd_argv[0]);
 
   /* Open executable file. */
-  file = filesys_open (file_name);
+  file = filesys_open (cmd_argv[0]);
   if (file == NULL) 
     {
-      printf ("load: %s: open failed\n", file_name);
+      printf ("load: %s: open failed\n", cmd_argv[0]);
       goto done; 
     }
-
+  printf("file open success!\n");
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
@@ -317,12 +389,20 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (!setup_stack (esp))
     goto done;
   
-  // SG_PRJ1 TODO: construct stack
+  // SG_PRJ1 TODO_DONE: construct stack
   // ...
-  
+  printf("i want construct stack...\n");
+  for(i=0; i < cmd_argc; i++)
+      printf("cmd_argv[%d] = %s\n", i, cmd_argv[i]);
+  push_args(cmd_argc, cmd_argv, esp);
+  printf("construct stack end.\n");
+
+  free(cmd_cpy);
+  hex_dump (*esp, *esp, (uint32_t)PHYS_BASE - (uint32_t) *esp, true);
+  // free(cmd_cpy);
+
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
-
   success = true;
 
  done:
@@ -330,7 +410,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   file_close (file);
   return success;
 }
-
+
 /* load() helpers. */
 
 static bool install_page (void *upage, void *kpage, bool writable);
