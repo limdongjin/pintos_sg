@@ -88,6 +88,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+  // SG_PRJ1 TODO: if you want debugging, insert long time loop.
   return -1;
 }
 
@@ -220,6 +221,12 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (t->pagedir == NULL) 
     goto done;
   process_activate ();
+  
+  // SG_PRJ1 TODO: parse file name
+  // If you want to check the dump values before
+  // implementing process_wait(), insert infinite loop in process_wait() to block process
+  // (You should finish to implement process_wait() later)
+  // ....
 
   /* Open executable file. */
   file = filesys_open (file_name);
@@ -304,7 +311,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Set up stack. */
   if (!setup_stack (esp))
     goto done;
-
+  
+  // SG_PRJ1 TODO: construct stack
+  // ...
+  
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 

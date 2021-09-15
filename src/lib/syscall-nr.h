@@ -4,6 +4,7 @@
 /* System call numbers. */
 enum 
   {
+    /* SG_PRJ1 */
     /* Projects 2 and later. */
     SYS_HALT,                   /* Halt the operating system. */
     SYS_EXIT,                   /* Terminate this process. */
@@ -18,6 +19,10 @@ enum
     SYS_SEEK,                   /* Change position in a file. */
     SYS_TELL,                   /* Report current position in a file. */
     SYS_CLOSE,                  /* Close a file. */
+    
+    // SG_PRJ1 TODO: Additional Implementation
+    // Add system call numbers for 2 new system calls
+    // fibonacci, max_of_four_int,
 
     /* Project 3 and optionally project 4. */
     SYS_MMAP,                   /* Map a file into memory. */

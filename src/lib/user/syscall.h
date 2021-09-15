@@ -19,6 +19,7 @@ typedef int mapid_t;
 #define EXIT_SUCCESS 0          /* Successful execution. */
 #define EXIT_FAILURE 1          /* Unsuccessful execution. */
 
+// SG_PRJ1 TODO: Implement System Calls!
 /* Projects 2 and later. */
 void halt (void) NO_RETURN;
 void exit (int status) NO_RETURN;
@@ -33,6 +34,10 @@ int write (int fd, const void *buffer, unsigned length);
 void seek (int fd, unsigned position);
 unsigned tell (int fd);
 void close (int fd);
+
+// SG_PRJ1 TODO: Write prototype of 2 new system call APIs
+// fibonacci()
+// max_of_four_int()
 
 /* Project 3 and optionally project 4. */
 mapid_t mmap (int fd, void *addr);

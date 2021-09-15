@@ -61,6 +61,11 @@
           retval;                                               \
         })
 
+// SG_PRJ1 TODO: Define new syscall4() function for max_of_four_int()
+// #define syscall4( ..... ) 
+//  ....
+
+// SG_PRJ1 TODO: Implement General System Calls!!
 void
 halt (void) 
 {
@@ -182,3 +187,7 @@ inumber (int fd)
 {
   return syscall1 (SYS_INUMBER, fd);
 }
+
+// SG_PRJ1 TODO: Define fibonacci() and max_of_four_int() system calls APIs
+// ... fibonacci(...) { ... }
+// ... max_of_four_int(...) { ... }

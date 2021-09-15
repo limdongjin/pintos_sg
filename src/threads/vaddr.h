@@ -20,6 +20,9 @@
 #define PGSIZE  (1 << PGBITS)              /* Bytes in a page. */
 #define PGMASK  BITMASK(PGSHIFT, PGBITS)   /* Page offset bits (0:12). */
 
+// SG_PRJ1:  To verify the validity of a user-provided pointer, you can use functions in userprog/pagedir.c and threads/vaddr.h.
+// Recommend to implement the function which checks the validity of given address
+
 /* Offset within a page. */
 static inline unsigned pg_ofs (const void *va) {
   return (uintptr_t) va & PGMASK;
@@ -59,6 +62,7 @@ is_user_vaddr (const void *vaddr)
   return vaddr < PHYS_BASE;
 }
 
+// SG_PRJ1 TODO: Check pointer to kernel address space using is_user_vaddr() and is_kernel_vaddr()
 /* Returns true if VADDR is a kernel virtual address. */
 static inline bool
 is_kernel_vaddr (const void *vaddr) 

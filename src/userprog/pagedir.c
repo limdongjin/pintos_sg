@@ -6,6 +6,11 @@
 #include "threads/pte.h"
 #include "threads/palloc.h"
 
+// SG_PRJ1:  To verify the validity of a user-provided pointer, you can use functions in userprog/pagedir.c and threads/vaddr.h.
+// Check Unmapped virtual memory using pagedir_get_page()
+// Check pointer to kernel address space using is_user_vaddr() and is_kernel_vaddr()
+// Use these functions to verify the validity of given pointer
+
 static uint32_t *active_pd (void);
 static void invalidate_pagedir (uint32_t *);
 
