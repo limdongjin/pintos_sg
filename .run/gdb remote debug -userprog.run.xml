@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="gdb remote debug -userprog" type="CLion_Remote" version="1" remoteCommand="localhost:1234" symbolFile="$PROJECT_DIR$/src/userprog/build/kernel.o" sysroot="">
+    <debugger kind="GDB">$PROJECT_DIR$/src/utils/pintos-gdb</debugger>
+    <pathMapping remote=":$PROJECT_DIR$/src/userprog/build" local="$PROJECT_DIR$/src/userprog/build" />
+    <method v="2" />
+  </configuration>
+</component>
