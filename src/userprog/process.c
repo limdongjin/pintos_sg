@@ -88,7 +88,11 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  // SG_PRJ1 TODO: if you want debugging, insert long time loop.
+  // SG_PRJ1 TODO_DONE: if you want debugging, insert long time loop.
+  int i;
+  for (i=0; i<9199999999;i++); // temporal busy wait code
+  // 1억이면 충분하겠다 싶었는데, 충분하지 않았나봄.
+  // 숫자 높이니까 제대로 작동하네...
   return -1;
 }
 
@@ -227,6 +231,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   // implementing process_wait(), insert infinite loop in process_wait() to block process
   // (You should finish to implement process_wait() later)
   // ....
+  printf("i want parse file name\n");
 
   /* Open executable file. */
   file = filesys_open (file_name);
