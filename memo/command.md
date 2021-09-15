@@ -23,3 +23,18 @@
 
 // in userprog/build
 6. pintos -p ../../examples/echo -a  echo -- -q
+
+// 7 = 4 + 5 + 6 
+7. pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
+
+// but if you want debugging,
+9. cd userprog/build
+10. pintos-mkdisk filesys.dsk --filesys-size=2
+11. pintos -f -q
+12. pintos -p ../../examples/echo -a  echo -- -q
+13. cd .. #move to userprog/
+14. pintos --gdb -- -q run 'echo hello world'
+
+// but if you wand quick debugging.
+15. alias pintos-prj1-prepare, pintos-gdb-echo memo/alias.md
+16. just run two command.
