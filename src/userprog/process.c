@@ -238,8 +238,18 @@ push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp){
     }
 
     // word align
-    cur_esp = (void*)((unsigned int)(cur_esp) & 0xfffffffc);
+    // cur_esp = (void*)((unsigned int)(cur_esp) & 0xfffffffc);
+    
+   // word align_new
+   while(1)//word alignment
+	{
+		int temp=*esp;
+		if(temp % sizeof(uint32_t) ==0) 
+			break;
+		*esp-=sizeof(uint8_t);
+		*(uint8_t *)*esp=0;
 
+	}
     // last null
     cur_esp -= 4;
     memset(cur_esp, 0, 4);
@@ -293,7 +303,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
   // implementing process_wait(), insert infinite loop in process_wait() to block process
   // (You should finish to implement process_wait() later)
   // ....
-  printf("i want parse file name\n");
   int cmd_argc = 0;
   char* cmd_argv[CMD_ARGC_LIMIT];
   char* cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
@@ -301,9 +310,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
 
-  printf("parse file end.\n");
-  printf("argc = %d \n", cmd_argc);
-  printf("argv[0] = %s\n", cmd_argv[0]);
+  // printf("parse file end.\n");
+  // printf("argc = %d \n", cmd_argc);
+  // printf("argv[0] = %s\n", cmd_argv[0]);
 
   /* Open executable file. */
   file = filesys_open (cmd_argv[0]);
@@ -312,7 +321,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
       printf ("load: %s: open failed\n", cmd_argv[0]);
       goto done; 
     }
-  printf("file open success!\n");
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
@@ -322,7 +330,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      printf ("load: %s: error loading executable\n", file_name);
+      printf ("load: %s: error loading executable\n", cmd_argv[0]);
       goto done; 
     }
 
@@ -390,16 +398,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   
   // SG_PRJ1 TODO_DONE: construct stack
-  // ...
-  printf("i want construct stack...\n");
-  for(i=0; i < cmd_argc; i++)
-      printf("cmd_argv[%d] = %s\n", i, cmd_argv[i]);
+  // for(i=0; i < cmd_argc; i++)
+  //    printf("cmd_argv[%d] = %s\n", i, cmd_argv[i]);
   push_args(cmd_argc, cmd_argv, esp);
-  printf("construct stack end.\n");
 
-  free(cmd_cpy);
-  hex_dump (*esp, *esp, (uint32_t)PHYS_BASE - (uint32_t) *esp, true);
-  // free(cmd_cpy);
+  // hex_dump (*esp, *esp, (uint32_t)PHYS_BASE - (uint32_t) *esp, true);
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
@@ -408,6 +411,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
  done:
   /* We arrive here whether the load is successful or not. */
   file_close (file);
+  free(cmd_cpy);
+
   return success;
 }
 
