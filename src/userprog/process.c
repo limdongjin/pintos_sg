@@ -92,9 +92,10 @@ process_wait (tid_t child_tid UNUSED)
 {
   // SG_PRJ1 TODO_DONE: if you want debugging, insert long time loop.
   int i;
-  for (i=0; i<9199999999ULL;i++); // temporal busy wait code
+   for (i=0; i<9199999999ULL;i++); // temporal busy wait code
   // 1억이면 충분하겠다 싶었는데, 충분하지 않았나봄.
   // 숫자 높이니까 제대로 작동하네...
+   // TODO prcess_wait mechanism upgrade..!!
   return -1;
 }
 
@@ -298,7 +299,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
   
-  // SG_PRJ1 TODO: parse file name
+  // SG_PRJ1 TODO_DONE: parse file name
   // If you want to check the dump values before
   // implementing process_wait(), insert infinite loop in process_wait() to block process
   // (You should finish to implement process_wait() later)
@@ -309,6 +310,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   memcpy(cmd_cpy, file_name, strlen(file_name)+1);
 
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
+  memcpy(t->name, cmd_argv[0], 16);
 
   // printf("parse file end.\n");
   // printf("argc = %d \n", cmd_argc);

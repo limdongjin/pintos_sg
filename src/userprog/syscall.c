@@ -6,10 +6,11 @@
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
 #include "devices/shutdown.h"
+#include "process.h"
 
 static void syscall_handler (struct intr_frame *);
 static bool is_valid_user_ptr(const void *user_ptr);
-static void get_argv_and_verify(void* esp, void* argv[SYSCALL_MAX_ARGC]);
+static bool get_argv_and_verify(void* esp, void* argv[SYSCALL_MAX_ARGC]);
 static void abnormal_exit();
 
 void
@@ -29,7 +30,7 @@ is_valid_user_ptr(const void *user_ptr){
 
 // get argv. and verify
 // if not valid, exit.
-static void
+static bool
 get_argv_and_verify(void* esp, void* argv[SYSCALL_MAX_ARGC]){
     ASSERT(argv != NULL);
     int num_of_syscall = *(int *)esp;
@@ -85,8 +86,9 @@ get_argv_and_verify(void* esp, void* argv[SYSCALL_MAX_ARGC]){
     while(i--){
         if(argv[i] == NULL) continue;
         if(!is_valid_user_ptr(argv[i]))
-            abnormal_exit();
+            return false;
     }
+    return true;
 }
 
 static void abnormal_exit() {
@@ -97,7 +99,7 @@ static void abnormal_exit() {
 static void
 syscall_handler (struct intr_frame *f UNUSED)
 {
-  // SG_PRJ1 TODO
+  // SG_PRJ1 TODO_DONE
   /* 
    * You must make syscall_handler() handle system calls`.
    * If you have done argument passing, you can get system call number from intr_frame *f.
@@ -108,8 +110,13 @@ syscall_handler (struct intr_frame *f UNUSED)
    * */
 //  void* esp = f->esp;
   void* syscall_argv[SYSCALL_MAX_ARGC] = {NULL, };
-
-  get_argv_and_verify(f->esp, syscall_argv);
+  bool is_success;
+  is_success = get_argv_and_verify(f->esp, syscall_argv);
+  
+  if(!is_success){
+    f->eax = -1;
+    abnormal_exit();
+  }
 
   switch (*(uint32_t*)(f->esp)) {
       case SYS_HALT:
@@ -187,7 +194,7 @@ syscall_handler (struct intr_frame *f UNUSED)
   // thread_exit ();
 }
 
-// SG_PRJ1 TODO: Define General System Calls Implementation
+// SG_PRJ1 TODO_DONE: Define General System Calls Implementation
 // Synchronization will be needed
 // (You can use busy waiting)
 // exit status is -1 when syscall_handler is terminated in abnormal way
@@ -200,9 +207,10 @@ halt (void)
 
 void
 exit (int status) {
+    // TODO exit() synchronization..?
     struct thread *t = thread_current();
     t->exit_code = status;
-    // printf("%s: exit(%d)\n", t->name, status);
+    printf("%s: exit(%d)\n", t->name, status);
 
     thread_exit();
 }
