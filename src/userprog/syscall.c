@@ -81,13 +81,16 @@ get_argv_and_verify(void* esp, void* argv[SYSCALL_MAX_ARGC]){
             break;
     }
 
+    if(argv[0] != NULL && !is_valid_user_ptr(argv[0])) return false;
+    if(argv[1] != NULL &&  !is_valid_user_ptr(argv[1])) return false;
+    if(argv[2] != NULL && !is_valid_user_ptr(argv[2])) return false;
     // verify
-    i = SYSCALL_MAX_ARGC;
-    while(i--){
-        if(argv[i] == NULL) continue;
-        if(!is_valid_user_ptr(argv[i]))
-            return false;
-    }
+    // i = SYSCALL_MAX_ARGC;
+    // while(i--){
+     //   if(argv[i] == NULL) continue;
+     //   if(!is_valid_user_ptr(argv[i]))
+     //       return false;
+    //}
     return true;
 }
 
