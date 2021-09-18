@@ -55,6 +55,7 @@ add_executable(pintos_sg
         src/examples/cmp.c
         src/examples/cp.c
         src/examples/echo.c
+        src/examples/additional.c
         src/examples/halt.c
         src/examples/hex-dump.c
         src/examples/lineup.c

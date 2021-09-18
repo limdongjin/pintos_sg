@@ -150,7 +150,7 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
   
-  // TODO Memory Access Restriction
+  // SG_PRJ1 TODO_DONE Memory Access Restriction
   // .... 일단 간단히 구현 
   if(!not_present || !user || !write) abnormal_exit();
   if(fault_addr == NULL /*|| is_user_vaddr(fault_addr)*/) abnormal_exit();

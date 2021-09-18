@@ -61,11 +61,27 @@
           retval;                                               \
         })
 
-// SG_PRJ1 TODO: Define new syscall4() function for max_of_four_int()
-// #define syscall4( ..... ) 
-//  ....
+// SG_PRJ1 TODO_DONE: Define new syscall4() function for max_of_four_int()
+/* Invokes syscall NUMBER, passing arguments ARG0, ARG1, and
+   ARG2, and ARG3 and returns the return value as an `int'. */
+#define syscall4(NUMBER, ARG0, ARG1, ARG2, ARG3)                \
+        ({                                                      \
+          int retval;                                           \
+          asm volatile                                          \
+            ("pushl %[arg3]; pushl %[arg2]; pushl %[arg1]; pushl %[arg0]; "\
+             "pushl %[number]; int $0x30; addl $20, %%esp"      \
+               : "=a" (retval)                                  \
+               : [number] "i" (NUMBER),                         \
+                 [arg0] "r" (ARG0),                             \
+                 [arg1] "r" (ARG1),                             \
+                 [arg2] "r" (ARG2),	                            \
+		         [arg3] "r" (ARG3)                              \
+               : "memory");                                     \
+          retval;                                               \
+        })
 
-// SG_PRJ1 TODO: Implement General System Calls!!
+
+// SG_PRJ1 TODO_DONE: Implement General System Calls!!
 void
 halt (void) 
 {
@@ -188,6 +204,16 @@ inumber (int fd)
   return syscall1 (SYS_INUMBER, fd);
 }
 
-// SG_PRJ1 TODO: Define fibonacci() and max_of_four_int() system calls APIs
-// ... fibonacci(...) { ... }
-// ... max_of_four_int(...) { ... }
+// SG_PRJ1 TODO_DONE: Define fibonacci() and max_of_four_int() system calls APIs
+int 
+fibonacci(int n){
+  return syscall1(SYS_FIBONACCI, n); 
+}
+
+int 
+max_of_four_int(int a, int b, int c, int d){
+  return syscall4(SYS_MAX_OF_FOUR_INT, a, b, c, d);
+}
+
+
+

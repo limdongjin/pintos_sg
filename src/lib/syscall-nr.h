@@ -20,9 +20,11 @@ enum
     SYS_TELL,                   /* Report current position in a file. */
     SYS_CLOSE,                  /* Close a file. */
     
-    // SG_PRJ1 TODO: Additional Implementation
+    // SG_PRJ1 TODO_DONE: Additional Implementation
     // Add system call numbers for 2 new system calls
     // fibonacci, max_of_four_int,
+    SYS_FIBONACCI,
+    SYS_MAX_OF_FOUR_INT,
 
     /* Project 3 and optionally project 4. */
     SYS_MMAP,                   /* Map a file into memory. */

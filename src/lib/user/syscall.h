@@ -35,9 +35,9 @@ void seek (int fd, unsigned position);
 unsigned tell (int fd);
 void close (int fd);
 
-// SG_PRJ1 TODO: Write prototype of 2 new system call APIs
-// fibonacci()
-// max_of_four_int()
+// SG_PRJ1 TODO_DONE: Write prototype of 2 new system call APIs
+int fibonacci(int n);
+int max_of_four_int(int a, int b, int c, int d);
 
 /* Project 3 and optionally project 4. */
 mapid_t mmap (int fd, void *addr);

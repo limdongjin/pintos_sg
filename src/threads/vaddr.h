@@ -62,7 +62,6 @@ is_user_vaddr (const void *vaddr)
   return vaddr < PHYS_BASE;
 }
 
-// SG_PRJ1 TODO: Check pointer to kernel address space using is_user_vaddr() and is_kernel_vaddr()
 /* Returns true if VADDR is a kernel virtual address. */
 static inline bool
 is_kernel_vaddr (const void *vaddr) 

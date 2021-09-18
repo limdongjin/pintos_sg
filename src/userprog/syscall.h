@@ -34,8 +34,8 @@ bool readdir (int fd, char name[READDIR_MAX_LEN + 1]);
 bool isdir (int fd);
 int inumber (int fd);
 
-// SG_PRJ1 TODO: write prototype of 2 new system call APIs
-// ... fibonacci ... 
-// ... max_of_four_int ...
+// SG_PRJ1 TODO_DONE: write prototype of 2 new system call APIs
+int fibonacci(int n);
+int max_of_four_int(int a, int b, int c, int d);
 
 #endif /* userprog/syscall.h */
