@@ -3,7 +3,6 @@
 #include <inttypes.h>
 #include <round.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
@@ -15,6 +14,7 @@
 #include "threads/init.h"
 #include "threads/interrupt.h"
 #include "threads/palloc.h"
+#include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 
@@ -90,13 +90,26 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  // SG_PRJ1 TODO_DONE: if you want debugging, insert long time loop.
-  int i;
-   for (i=0; i<9199999999ULL;i++); // temporal busy wait code
-  // 1억이면 충분하겠다 싶었는데, 충분하지 않았나봄.
-  // 숫자 높이니까 제대로 작동하네...
-   // TODO prcess_wait mechanism upgrade..!!
-  return -1;
+   // TODO_DONE prcess_wait mechanism upgrade..!!
+  struct list_elem* el;
+  struct list_elem* end_el;
+  struct thread* t;
+  int ret = -1;
+
+  el = list_begin(&(thread_current()->child_list));
+  end_el = list_end(&(thread_current()->child_list));
+
+  while(el != end_el && (t = list_entry(el, struct thread, elem_child))->tid != child_tid)
+    el = list_next(el);
+  
+  if(el == end_el || t == NULL) return -1;
+
+  sema_down(&(t->child_sema));
+  ret = t->exit_code;  
+  list_remove(&(t->elem_child));
+  sema_up(&(t->dead_child_sema));
+  
+  return ret;
 }
 
 /* Free the current process's resources. */
@@ -122,6 +135,8 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  sema_up(&(cur->child_sema));
+  sema_down(&(cur->dead_child_sema));
 }
 
 /* Sets up the CPU for running user code in the current
@@ -209,72 +224,59 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
 
-void parse_cmdline(char *cmdline, int *argc_p, char *argv[128]) {
+void 
+parse_cmdline(char *cmdline, int *argc_p, char *argv[128]) {
     char* cur, *rest;
     int i = 0;
 
     cur = strtok_r(cmdline, " ", &rest);
-    while(cur != NULL){
+    argv[i++] = cur;
+    while((cur = strtok_r(NULL, " ", &rest)) != NULL)
         argv[i++] = cur;
-        cur = strtok_r(NULL, " ", &rest);
-    }
 
     *argc_p = i;
 }
 void
 push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp){
-    ASSERT( argc >= 0 );
-
-    int i, t;
+    ASSERT( 0 <= argc && argc < CMD_ARGC_LIMIT );
+    //int i, tmp;
+    uint32_t i, tmp;
     void* argv_addr[CMD_ARGC_LIMIT];
     void* cur_esp = *esp;
 
     // push argv to stack
     i = argc;
     while(i--){
-        t = strlen(argv[i])+1;
-        cur_esp -= t;
-        memcpy(cur_esp, argv[i], t);
+        tmp = strlen(argv[i])+1;
+        cur_esp -= tmp;
+        memcpy(cur_esp, argv[i], tmp);
         argv_addr[i] = cur_esp;
     }
 
-    // word align
-    // cur_esp = (void*)((unsigned int)(cur_esp) & 0xfffffffc);
-    
    // word align_new
-   while(1)//word alignment
-	{
-		int temp=*esp;
-		if(temp % sizeof(uint32_t) ==0) 
-			break;
+   while( (*(uint32_t*)(*esp)) % sizeof(uint32_t) != 0) {
 		*esp-=sizeof(uint8_t);
 		*(uint8_t *)*esp=0;
-
-	}
-    // last null
-    cur_esp -= 4;
-    memset(cur_esp, 0, 4);
+    }
+    
+   // last null
+    memset((cur_esp-=4), 0, 4);
 
     // argv_addr -> stack
     i = argc;
-    while(i--){
-        cur_esp -= 4;
-        memcpy(cur_esp, &(argv_addr[i]), 4);
-    }
+    while(i--)
+      memcpy((cur_esp -= 4), &(argv_addr[i]), 4);
+    
 
-    // setting **argv (addr of stack, esp)
+    // set **argv
     argv_addr[argc] = cur_esp;
-    cur_esp -= 4;
-    // memcpy(cur_esp, &(cur_esp)+4, 4);
-    memcpy(cur_esp, &(argv_addr[argc]), 4);
+    memcpy((cur_esp -= 4), &(argv_addr[argc]), 4);
 
-    // setting argc
-    cur_esp -= 4;
-    memcpy(cur_esp, &argc, 4);
+    // set argc
+    memcpy((cur_esp -= 4), &argc, 4);
 
     // setting ret addr
-    cur_esp -= 4;
-    memset(cur_esp, 0, 4);
+    memset((cur_esp -= 4), 0, 4);
 
     *esp = cur_esp;
 }
@@ -292,7 +294,13 @@ load (const char *file_name, void (**eip) (void), void **esp)
   off_t file_ofs;
   bool success = false;
   int i;
-
+  int cmd_argc = 0;
+  
+  // NOTE. cmd_argv's component is cmd_cpy's relative pointer that passed by strtok_r(..) 
+  // so, you MUST ONLY free(cmd_cpy) 
+  char* cmd_argv[CMD_ARGC_LIMIT]; 
+  char* cmd_cpy = NULL;
+  
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -300,21 +308,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
   process_activate ();
   
   // SG_PRJ1 TODO_DONE: parse file name
-  // If you want to check the dump values before
-  // implementing process_wait(), insert infinite loop in process_wait() to block process
-  // (You should finish to implement process_wait() later)
-  // ....
-  int cmd_argc = 0;
-  char* cmd_argv[CMD_ARGC_LIMIT];
-  char* cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
+  cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
   memcpy(cmd_cpy, file_name, strlen(file_name)+1);
 
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
   memcpy(t->name, cmd_argv[0], 16);
-
-  // printf("parse file end.\n");
-  // printf("argc = %d \n", cmd_argc);
-  // printf("argv[0] = %s\n", cmd_argv[0]);
 
   /* Open executable file. */
   file = filesys_open (cmd_argv[0]);
@@ -400,11 +398,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   
   // SG_PRJ1 TODO_DONE: construct stack
-  // for(i=0; i < cmd_argc; i++)
-  //    printf("cmd_argv[%d] = %s\n", i, cmd_argv[i]);
   push_args(cmd_argc, cmd_argv, esp);
-
-  // hex_dump (*esp, *esp, (uint32_t)PHYS_BASE - (uint32_t) *esp, true);
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;

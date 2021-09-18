@@ -1,0 +1,2857 @@
+warning: test tests/userprog/exec-bound-3 doesn't count for grading
+warning: test tests/userprog/exec-bound-2 doesn't count for grading
+warning: test tests/userprog/sc-boundary-3 doesn't count for grading
+warning: test tests/userprog/exec-bound doesn't count for grading
+TOTAL TESTING SCORE: 39.1%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY BY TEST SET
+
+Test Set                                      Pts Max  % Ttl  % Max
+--------------------------------------------- --- --- ------ ------
+tests/userprog/Rubric.functionality            75/108  24.3%/ 35.0%
+tests/userprog/Rubric.robustness               52/ 88  14.8%/ 25.0%
+tests/userprog/no-vm/Rubric                     0/  1   0.0%/ 10.0%
+tests/filesys/base/Rubric                       0/ 30   0.0%/ 30.0%
+--------------------------------------------- --- --- ------ ------
+Total                                                  39.1%/100.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY OF INDIVIDUAL TESTS
+
+Functionality of system calls (tests/userprog/Rubric.functionality):
+	- Test argument passing on Pintos command line.
+	     3/ 3 tests/userprog/args-none
+	     3/ 3 tests/userprog/args-single
+	     3/ 3 tests/userprog/args-multiple
+	     3/ 3 tests/userprog/args-many
+	     3/ 3 tests/userprog/args-dbl-space
+
+	- Test "create" system call.
+	     3/ 3 tests/userprog/create-empty
+	     3/ 3 tests/userprog/create-long
+	     3/ 3 tests/userprog/create-normal
+	     3/ 3 tests/userprog/create-exists
+
+	- Test "open" system call.
+	  ** 0/ 3 tests/userprog/open-missing
+	  ** 0/ 3 tests/userprog/open-normal
+	  ** 0/ 3 tests/userprog/open-twice
+
+	- Test "read" system call.
+	  ** 0/ 3 tests/userprog/read-normal
+	  ** 0/ 3 tests/userprog/read-zero
+
+	- Test "write" system call.
+	  ** 0/ 3 tests/userprog/write-normal
+	  ** 0/ 3 tests/userprog/write-zero
+
+	- Test "close" system call.
+	  ** 0/ 3 tests/userprog/close-normal
+
+	- Test "exec" system call.
+	     5/ 5 tests/userprog/exec-once
+	     5/ 5 tests/userprog/exec-multiple
+	     5/ 5 tests/userprog/exec-arg
+
+	- Test "wait" system call.
+	     5/ 5 tests/userprog/wait-simple
+	     5/ 5 tests/userprog/wait-twice
+
+	- Test "exit" system call.
+	     5/ 5 tests/userprog/exit
+
+	- Test "halt" system call.
+	     3/ 3 tests/userprog/halt
+
+	- Test recursive execution of user programs.
+	    15/15 tests/userprog/multi-recurse
+
+	- Test read-only executable feature.
+	  ** 0/ 3 tests/userprog/rox-simple
+	  ** 0/ 3 tests/userprog/rox-child
+	  ** 0/ 3 tests/userprog/rox-multichild
+
+	- Section summary.
+	     17/ 28 tests passed
+	     75/108 points subtotal
+
+Robustness of system calls (tests/userprog/Rubric.robustness):
+	- Test robustness of file descriptor handling.
+	  ** 0/ 2 tests/userprog/close-stdin
+	  ** 0/ 2 tests/userprog/close-stdout
+	  ** 0/ 2 tests/userprog/close-bad-fd
+	  ** 0/ 2 tests/userprog/close-twice
+	  ** 0/ 2 tests/userprog/read-bad-fd
+	  ** 0/ 2 tests/userprog/read-stdout
+	     2/ 2 tests/userprog/write-bad-fd
+	     2/ 2 tests/userprog/write-stdin
+	  ** 0/ 2 tests/userprog/multi-child-fd
+
+	- Test robustness of pointer handling.
+	     3/ 3 tests/userprog/create-bad-ptr
+	     3/ 3 tests/userprog/exec-bad-ptr
+	  ** 0/ 3 tests/userprog/open-bad-ptr
+	  ** 0/ 3 tests/userprog/read-bad-ptr
+	  ** 0/ 3 tests/userprog/write-bad-ptr
+
+	- Test robustness of buffer copying across page boundaries.
+	     3/ 3 tests/userprog/create-bound
+	  ** 0/ 3 tests/userprog/open-boundary
+	  ** 0/ 3 tests/userprog/read-boundary
+	  ** 0/ 3 tests/userprog/write-boundary
+
+	- Test handling of null pointer and empty strings.
+	     2/ 2 tests/userprog/create-null
+	  ** 0/ 2 tests/userprog/open-null
+	  ** 0/ 2 tests/userprog/open-empty
+
+	- Test robustness of system call implementation.
+	     3/ 3 tests/userprog/sc-bad-arg
+	     3/ 3 tests/userprog/sc-bad-sp
+	     5/ 5 tests/userprog/sc-boundary
+	     5/ 5 tests/userprog/sc-boundary-2
+
+	- Test robustness of "exec" and "wait" system calls.
+	     5/ 5 tests/userprog/exec-missing
+	     5/ 5 tests/userprog/wait-bad-pid
+	     5/ 5 tests/userprog/wait-killed
+
+	- Test robustness of exception handling.
+	     1/ 1 tests/userprog/bad-read
+	     1/ 1 tests/userprog/bad-write
+	     1/ 1 tests/userprog/bad-jump
+	     1/ 1 tests/userprog/bad-read2
+	     1/ 1 tests/userprog/bad-write2
+	     1/ 1 tests/userprog/bad-jump2
+
+	- Section summary.
+	     19/ 34 tests passed
+	     52/ 88 points subtotal
+
+Functionality of features that VM might break (tests/userprog/no-vm/Rubric):
+
+	  ** 0/ 1 tests/userprog/no-vm/multi-oom
+
+	- Section summary.
+	      0/  1 tests passed
+	      0/  1 points subtotal
+
+Functionality of base file system (tests/filesys/base/Rubric):
+	- Test basic support for small files.
+	  ** 0/ 1 tests/filesys/base/sm-create
+	  ** 0/ 2 tests/filesys/base/sm-full
+	  ** 0/ 2 tests/filesys/base/sm-random
+	  ** 0/ 2 tests/filesys/base/sm-seq-block
+	  ** 0/ 3 tests/filesys/base/sm-seq-random
+
+	- Test basic support for large files.
+	  ** 0/ 1 tests/filesys/base/lg-create
+	  ** 0/ 2 tests/filesys/base/lg-full
+	  ** 0/ 2 tests/filesys/base/lg-random
+	  ** 0/ 2 tests/filesys/base/lg-seq-block
+	  ** 0/ 3 tests/filesys/base/lg-seq-random
+
+	- Test synchronized multiprogram access to files.
+	  ** 0/ 4 tests/filesys/base/syn-read
+	  ** 0/ 4 tests/filesys/base/syn-write
+	  ** 0/ 2 tests/filesys/base/syn-remove
+
+	- Section summary.
+	      0/ 13 tests passed
+	      0/ 30 points subtotal
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-missing FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-missing:
+0x0804a1c8: open (...../lib/user/syscall.c:110)
+0x080480b2: test_main (...serprog/open-missing.c:11)
+0x080480f9: main (...ild/../../tests/main.c:13)
+0x0804873a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-missing:
+
+Copying tests/userprog/open-missing to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-missing
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-missing' into the file system...
+Erasing ustar archive...
+Executing 'open-missing':
+(open-missing) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 243 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 25 user ticks
+hda2 (filesys): 63 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1188 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-normal FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-normal:
+0x0804a1c8: open (...../lib/user/syscall.c:110)
+0x080480b2: test_main (...userprog/open-normal.c:11)
+0x080480f9: main (...ild/../../tests/main.c:13)
+0x0804873a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-normal:
+
+Copying tests/userprog/open-normal to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-normal
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 102 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-normal' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'open-normal':
+(open-normal) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 267 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 25 user ticks
+hda2 (filesys): 88 reads, 210 writes
+hda3 (scratch): 101 reads, 2 writes
+Console: 1230 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-twice FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a228 0x80480b3 0x804815d 0x804879a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-twice:
+0x0804a228: open (...../lib/user/syscall.c:110)
+0x080480b3: test_main (.../userprog/open-twice.c:13)
+0x0804815d: main (...ild/../../tests/main.c:13)
+0x0804879a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-twice:
+
+Copying tests/userprog/open-twice to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-twice
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-twice' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'open-twice':
+(open-twice) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a228 0x80480b3 0x804815d 0x804879a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 268 ticks
+Thread: 0 idle ticks, 243 kernel ticks, 25 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1226 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-normal FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80485bb 0x80480c2 0x80480f4 0x804873a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-normal:
+0x0804a1c8: open (...../lib/user/syscall.c:110)
+0x080485bb: check_file (...ild/../../tests/lib.c:155)
+0x080480c2: test_main (...userprog/read-normal.c:11)
+0x080480f4: main (...ild/../../tests/main.c:13)
+0x0804873a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-normal:
+
+Copying tests/userprog/read-normal to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-normal
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-normal' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'read-normal':
+(read-normal) begin
+(read-normal) open "sample.txt" for verification
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80485bb 0x80480c2 0x80480f4 0x804873a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 274 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 32 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1289 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-zero FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a218 0x80480be 0x8048142 0x804878a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-zero:
+0x0804a218: open (...../lib/user/syscall.c:110)
+0x080480be: test_main (...s/userprog/read-zero.c:14)
+0x08048142: main (...ild/../../tests/main.c:13)
+0x0804878a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-zero:
+
+Copying tests/userprog/read-zero to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-zero
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-zero' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'read-zero':
+(read-zero) begin
+(read-zero) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a218 0x80480be 0x8048142 0x804878a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 271 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 29 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1252 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/write-normal FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a238 0x80480ee 0x8048168 0x80487aa
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/write-normal:
+0x0804a238: open (...../lib/user/syscall.c:110)
+0x080480ee: test_main (...serprog/write-normal.c:14)
+0x08048168: main (...ild/../../tests/main.c:13)
+0x080487aa: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/write-normal:
+
+Copying tests/userprog/write-normal to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run write-normal
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'write-normal' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'write-normal':
+(write-normal) begin
+(write-normal) create "test.txt"
+(write-normal) open "test.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a238 0x80480ee 0x8048168 0x80487aa.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 292 ticks
+Thread: 0 idle ticks, 243 kernel ticks, 49 user ticks
+hda2 (filesys): 109 reads, 219 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1299 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/write-zero FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a208 0x80480be 0x8048130 0x804877a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/write-zero:
+0x0804a208: open (...../lib/user/syscall.c:110)
+0x080480be: test_main (.../userprog/write-zero.c:14)
+0x08048130: main (...ild/../../tests/main.c:13)
+0x0804877a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/write-zero:
+
+Copying tests/userprog/write-zero to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run write-zero
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'write-zero' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'write-zero':
+(write-zero) begin
+(write-zero) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a208 0x80480be 0x8048130 0x804877a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 271 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 29 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1257 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/close-normal FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1e8 0x80480bf 0x804811c 0x804875a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/close-normal:
+0x0804a1e8: open (...../lib/user/syscall.c:110)
+0x080480bf: test_main (...serprog/close-normal.c:11)
+0x0804811c: main (...ild/../../tests/main.c:13)
+0x0804875a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/close-normal:
+
+Copying tests/userprog/close-normal to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run close-normal
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'close-normal' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'close-normal':
+(close-normal) begin
+(close-normal) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1e8 0x80480bf 0x804811c 0x804875a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 30 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1267 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-simple FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a248 0x80480bf 0x804816f 0x80487ba
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/rox-simple:
+0x0804a248: open (...../lib/user/syscall.c:110)
+0x080480bf: test_main (.../userprog/rox-simple.c:14)
+0x0804816f: main (...ild/../../tests/main.c:13)
+0x080487ba: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/rox-simple:
+
+Copying tests/userprog/rox-simple to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run rox-simple
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 101 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-simple' into the file system...
+Erasing ustar archive...
+Executing 'rox-simple':
+(rox-simple) begin
+(rox-simple) open "rox-simple"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a248 0x80480bf 0x804816f 0x80487ba.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 247 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 29 user ticks
+hda2 (filesys): 63 reads, 206 writes
+hda3 (scratch): 100 reads, 2 writes
+Console: 1212 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-child FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a308 0x80480c0 0x8048234 0x804887a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/rox-child:
+0x0804a308: open (...../lib/user/syscall.c:110)
+0x080480c0: test_main (...userprog/rox-child.inc:16)
+0x08048234: main (...ild/../../tests/main.c:13)
+0x0804887a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/rox-child:
+
+Copying tests/userprog/rox-child to scratch partition...
+Copying tests/userprog/child-rox to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run rox-child
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 212 sectors (106 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-child' into the file system...
+Putting 'child-rox' into the file system...
+Erasing ustar archive...
+Executing 'rox-child':
+(rox-child) begin
+(rox-child) open "child-rox"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a308 0x80480c0 0x8048234 0x804887a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 330 ticks
+Thread: 0 idle ticks, 301 kernel ticks, 29 user ticks
+hda2 (filesys): 88 reads, 430 writes
+hda3 (scratch): 211 reads, 2 writes
+Console: 1251 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-multichild FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a308 0x80480c0 0x8048234 0x804887a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/rox-multichild:
+0x0804a308: open (...../lib/user/syscall.c:110)
+0x080480c0: test_main (...userprog/rox-child.inc:16)
+0x08048234: main (...ild/../../tests/main.c:13)
+0x0804887a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/rox-multichild:
+
+Copying tests/userprog/rox-multichild to scratch partition...
+Copying tests/userprog/child-rox to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run rox-multichild
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 212 sectors (106 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-multichild' into the file system...
+Putting 'child-rox' into the file system...
+Erasing ustar archive...
+Executing 'rox-multichild':
+(rox-multichild) begin
+(rox-multichild) open "child-rox"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a308 0x80480c0 0x8048234 0x804887a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 332 ticks
+Thread: 0 idle ticks, 302 kernel ticks, 30 user ticks
+hda2 (filesys): 88 reads, 430 writes
+hda3 (scratch): 211 reads, 2 writes
+Console: 1276 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/close-stdin FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b98c: close (...../userprog/syscall.c:281)
+0xc002bd95: syscall_handler (...../userprog/syscall.c:164)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/close-stdin:
+0x0804a229: close (...../lib/user/syscall.c:146)
+0x080480b2: test_main (...userprog/close-stdin.c:11)
+0x080480e4: main (...ild/../../tests/main.c:13)
+0x0804872a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/close-stdin:
+
+Copying tests/userprog/close-stdin to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run close-stdin
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'close-stdin' into the file system...
+Erasing ustar archive...
+Executing 'close-stdin':
+(close-stdin) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 242 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 24 user ticks
+hda2 (filesys): 62 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1184 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/close-stdout FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b98c: close (...../userprog/syscall.c:281)
+0xc002bd95: syscall_handler (...../userprog/syscall.c:164)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/close-stdout:
+0x0804a229: close (...../lib/user/syscall.c:146)
+0x080480b2: test_main (...serprog/close-stdout.c:11)
+0x080480e4: main (...ild/../../tests/main.c:13)
+0x0804872a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/close-stdout:
+
+Copying tests/userprog/close-stdout to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run close-stdout
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'close-stdout' into the file system...
+Erasing ustar archive...
+Executing 'close-stdout':
+(close-stdout) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 242 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 24 user ticks
+hda2 (filesys): 62 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1188 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/close-bad-fd FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b98c: close (...../userprog/syscall.c:281)
+0xc002bd95: syscall_handler (...../userprog/syscall.c:164)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/close-bad-fd:
+0x0804a229: close (...../lib/user/syscall.c:146)
+0x080480b2: test_main (...serprog/close-bad-fd.c:11)
+0x080480e4: main (...ild/../../tests/main.c:13)
+0x0804872a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/close-bad-fd:
+
+Copying tests/userprog/close-bad-fd to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run close-bad-fd
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'close-bad-fd' into the file system...
+Erasing ustar archive...
+Executing 'close-bad-fd':
+(close-bad-fd) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b98c 0xc002bd95 0xc0021a36 0xc0021b6d 0x804a229 0x80480b2 0x80480e4 0x804872a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 242 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 24 user ticks
+hda2 (filesys): 62 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1188 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/close-twice FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a208 0x80480bf 0x8048130 0x804877a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/close-twice:
+0x0804a208: open (...../lib/user/syscall.c:110)
+0x080480bf: test_main (...userprog/close-twice.c:13)
+0x08048130: main (...ild/../../tests/main.c:13)
+0x0804877a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/close-twice:
+
+Copying tests/userprog/close-twice to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run close-twice
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'close-twice' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'close-twice':
+(close-twice) begin
+(close-twice) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a208 0x80480bf 0x8048130 0x804877a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 30 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1262 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-bad-fd FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9f8 0xc002bd3e 0xc0021a36 0xc0021b6d 0x804a27f 0x80480c2 0x8048188 0x80487ca
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9f8: read (...../userprog/syscall.c:270)
+0xc002bd3e: syscall_handler (...../userprog/syscall.c:149)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-bad-fd:
+0x0804a27f: read (...../lib/user/syscall.c:122)
+0x080480c2: test_main (...userprog/read-bad-fd.c:15)
+0x08048188: main (...ild/../../tests/main.c:13)
+0x080487ca: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-bad-fd:
+
+Copying tests/userprog/read-bad-fd to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-bad-fd
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 101 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-bad-fd' into the file system...
+Erasing ustar archive...
+Executing 'read-bad-fd':
+(read-bad-fd) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9f8 0xc002bd3e 0xc0021a36 0xc0021b6d 0x804a27f 0x80480c2 0x8048188 0x80487ca.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 243 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 25 user ticks
+hda2 (filesys): 63 reads, 206 writes
+hda3 (scratch): 100 reads, 2 writes
+Console: 1185 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-stdout FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9f8 0xc002bd3e 0xc0021a36 0xc0021b6d 0x804a1ef 0x80480c1 0x80480f3 0x804873a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9f8: read (...../userprog/syscall.c:270)
+0xc002bd3e: syscall_handler (...../userprog/syscall.c:149)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-stdout:
+0x0804a1ef: read (...../lib/user/syscall.c:122)
+0x080480c1: test_main (...userprog/read-stdout.c:14)
+0x080480f3: main (...ild/../../tests/main.c:13)
+0x0804873a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-stdout:
+
+Copying tests/userprog/read-stdout to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-stdout
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-stdout' into the file system...
+Erasing ustar archive...
+Executing 'read-stdout':
+(read-stdout) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9f8 0xc002bd3e 0xc0021a36 0xc0021b6d 0x804a1ef 0x80480c1 0x80480f3 0x804873a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 243 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 25 user ticks
+hda2 (filesys): 63 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1184 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/multi-child-fd FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a248 0x80480c3 0x8048172 0x80487ba
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/multi-child-fd:
+0x0804a248: open (...../lib/user/syscall.c:110)
+0x080480c3: test_main (...rprog/multi-child-fd.c:18)
+0x08048172: main (...ild/../../tests/main.c:13)
+0x080487ba: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/multi-child-fd:
+
+Copying tests/userprog/multi-child-fd to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+Copying tests/userprog/child-close to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run multi-child-fd
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 213 sectors (106 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'multi-child-fd' into the file system...
+Putting 'sample.txt' into the file system...
+Putting 'child-close' into the file system...
+Erasing ustar archive...
+Executing 'multi-child-fd':
+(multi-child-fd) begin
+(multi-child-fd) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a248 0x80480c3 0x8048172 0x80487ba.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 357 ticks
+Thread: 0 idle ticks, 327 kernel ticks, 30 user ticks
+hda2 (filesys): 115 reads, 434 writes
+hda3 (scratch): 212 reads, 2 writes
+Console: 1325 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-bad-ptr FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1d8 0x80480b2 0x80480fe 0x804874a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-bad-ptr:
+0x0804a1d8: open (...../lib/user/syscall.c:110)
+0x080480b2: test_main (...serprog/open-bad-ptr.c:11)
+0x080480fe: main (...ild/../../tests/main.c:13)
+0x0804874a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-bad-ptr:
+
+Copying tests/userprog/open-bad-ptr to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-bad-ptr
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-bad-ptr' into the file system...
+Erasing ustar archive...
+Executing 'open-bad-ptr':
+(open-bad-ptr) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1d8 0x80480b2 0x80480fe 0x804874a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 243 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 25 user ticks
+hda2 (filesys): 63 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1188 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-bad-ptr FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1f8 0x80480be 0x8048123 0x804876a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-bad-ptr:
+0x0804a1f8: open (...../lib/user/syscall.c:110)
+0x080480be: test_main (...serprog/read-bad-ptr.c:12)
+0x08048123: main (...ild/../../tests/main.c:13)
+0x0804876a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-bad-ptr:
+
+Copying tests/userprog/read-bad-ptr to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-bad-ptr
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-bad-ptr' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'read-bad-ptr':
+(read-bad-ptr) begin
+(read-bad-ptr) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1f8 0x80480be 0x8048123 0x804876a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 242 kernel ticks, 30 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1267 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/write-bad-ptr FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1f8 0x80480be 0x8048123 0x804876a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/write-bad-ptr:
+0x0804a1f8: open (...../lib/user/syscall.c:110)
+0x080480be: test_main (...erprog/write-bad-ptr.c:12)
+0x08048123: main (...ild/../../tests/main.c:13)
+0x0804876a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/write-bad-ptr:
+
+Copying tests/userprog/write-bad-ptr to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run write-bad-ptr
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 103 sectors (51 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'write-bad-ptr' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'write-bad-ptr':
+(write-bad-ptr) begin
+(write-bad-ptr) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1f8 0x80480be 0x8048123 0x804876a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 243 kernel ticks, 29 user ticks
+hda2 (filesys): 88 reads, 212 writes
+hda3 (scratch): 102 reads, 2 writes
+Console: 1272 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-boundary FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a278 0x80480c6 0x80481a1 0x80487ea
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-boundary:
+0x0804a278: open (...../lib/user/syscall.c:110)
+0x080480c6: test_main (...erprog/open-boundary.c:12)
+0x080481a1: main (...ild/../../tests/main.c:13)
+0x080487ea: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-boundary:
+
+Copying tests/userprog/open-boundary to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-boundary
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 105 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-boundary' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'open-boundary':
+(open-boundary) begin
+(open-boundary) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a278 0x80480c6 0x80481a1 0x80487ea.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 277 ticks
+Thread: 0 idle ticks, 244 kernel ticks, 33 user ticks
+hda2 (filesys): 88 reads, 216 writes
+hda3 (scratch): 104 reads, 2 writes
+Console: 1272 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-boundary FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a2f8 0x80480c0 0x8048221 0x804886a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/read-boundary:
+0x0804a2f8: open (...../lib/user/syscall.c:110)
+0x080480c0: test_main (...erprog/read-boundary.c:18)
+0x08048221: main (...ild/../../tests/main.c:13)
+0x0804886a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/read-boundary:
+
+Copying tests/userprog/read-boundary to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run read-boundary
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 107 sectors (53 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-boundary' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'read-boundary':
+(read-boundary) begin
+(read-boundary) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a2f8 0x80480c0 0x8048221 0x804886a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 278 ticks
+Thread: 0 idle ticks, 245 kernel ticks, 33 user ticks
+hda2 (filesys): 89 reads, 220 writes
+hda3 (scratch): 106 reads, 2 writes
+Console: 1272 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/write-boundary FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a2b8 0x80480cd 0x80481df 0x804882a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/write-boundary:
+0x0804a2b8: open (...../lib/user/syscall.c:110)
+0x080480cd: test_main (...rprog/write-boundary.c:20)
+0x080481df: main (...ild/../../tests/main.c:13)
+0x0804882a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/write-boundary:
+
+Copying tests/userprog/write-boundary to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run write-boundary
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 106 sectors (53 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'write-boundary' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'write-boundary':
+(write-boundary) begin
+(write-boundary) open "sample.txt"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a2b8 0x80480cd 0x80481df 0x804882a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 279 ticks
+Thread: 0 idle ticks, 245 kernel ticks, 34 user ticks
+hda2 (filesys): 89 reads, 218 writes
+hda3 (scratch): 105 reads, 2 writes
+Console: 1277 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-null FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1b8 0x80480b2 0x80480e4 0x804872a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-null:
+0x0804a1b8: open (...../lib/user/syscall.c:110)
+0x080480b2: test_main (...s/userprog/open-null.c:12)
+0x080480e4: main (...ild/../../tests/main.c:13)
+0x0804872a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-null:
+
+Copying tests/userprog/open-null to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-null
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-null' into the file system...
+Erasing ustar archive...
+Executing 'open-null':
+(open-null) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1b8 0x80480b2 0x80480e4 0x804872a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 241 ticks
+Thread: 0 idle ticks, 217 kernel ticks, 24 user ticks
+hda2 (filesys): 62 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1176 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/open-empty FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/open-empty:
+0x0804a1c8: open (...../lib/user/syscall.c:110)
+0x080480b2: test_main (.../userprog/open-empty.c:11)
+0x080480f9: main (...ild/../../tests/main.c:13)
+0x0804873a: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/open-empty:
+
+Copying tests/userprog/open-empty to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run open-empty
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 100 sectors (50 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'open-empty' into the file system...
+Erasing ustar archive...
+Executing 'open-empty':
+(open-empty) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a1c8 0x80480b2 0x80480f9 0x804873a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 242 ticks
+Thread: 0 idle ticks, 218 kernel ticks, 24 user ticks
+hda2 (filesys): 63 reads, 204 writes
+hda3 (scratch): 99 reads, 2 writes
+Console: 1180 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/no-vm/multi-oom FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a818 0x80480b9 0x80480da 0x804823b 0x80489aa
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/userprog/no-vm/multi-oom:
+0x0804a818: open (...../lib/user/syscall.c:110)
+0x080480b9: consume_some_resources (...prog/no-vm/multi-oom.c:57)
+0x080480da: consume_some_resources_and_die (...prog/no-vm/multi-oom.c:67)
+0x0804823b: main (...rog/no-vm/multi-oom.c:119)
+0x080489aa: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/userprog/no-vm/multi-oom:
+
+Copying tests/userprog/no-vm/multi-oom to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run multi-oom
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 116 sectors (58 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'multi-oom' into the file system...
+Erasing ustar archive...
+Executing 'multi-oom':
+(multi-oom) begin
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a818 0x80480b9 0x80480da 0x804823b 0x80489aa.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 750 ticks
+Thread: 0 idle ticks, 238 kernel ticks, 512 user ticks
+hda2 (filesys): 707 reads, 236 writes
+hda3 (scratch): 115 reads, 2 writes
+Console: 1189 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/sm-create FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x80485bb 0x8048102 0x8048893 0x80488be
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/sm-create:
+0x0804a348: open (...../lib/user/syscall.c:110)
+0x080485bb: check_file (...ild/../../tests/lib.c:155)
+0x08048102: test_main (...sts/filesys/create.inc:15)
+0x08048893: main (...ild/../../tests/main.c:13)
+0x080488be: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/sm-create:
+
+Copying tests/filesys/base/sm-create to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run sm-create
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'sm-create' into the file system...
+Erasing ustar archive...
+Executing 'sm-create':
+(sm-create) begin
+(sm-create) create "blargle"
+(sm-create) open "blargle" for verification
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x80485bb 0x8048102 0x8048893 0x80488be.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 219 kernel ticks, 53 user ticks
+hda2 (filesys): 84 reads, 228 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1260 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/sm-full FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/sm-full:
+0x0804a328: open (...../lib/user/syscall.c:110)
+0x08048777: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e4: test_main (.../filesys/base/full.inc:20)
+0x08048873: main (...ild/../../tests/main.c:13)
+0x0804889e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/sm-full:
+
+Copying tests/filesys/base/sm-full to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run sm-full
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'sm-full' into the file system...
+Erasing ustar archive...
+Executing 'sm-full':
+(sm-full) begin
+(sm-full) create "quux"
+(sm-full) open "quux"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 282 ticks
+Thread: 0 idle ticks, 219 kernel ticks, 63 user ticks
+hda2 (filesys): 83 reads, 228 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1225 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/sm-random FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a4f8 0x804813e 0x8048a43 0x8048a6e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/sm-random:
+0x0804a4f8: open (...../lib/user/syscall.c:110)
+0x0804813e: test_main (...ilesys/base/random.inc:33)
+0x08048a43: main (...ild/../../tests/main.c:13)
+0x08048a6e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/sm-random:
+
+Copying tests/filesys/base/sm-random to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run sm-random
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 106 sectors (53 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'sm-random' into the file system...
+Erasing ustar archive...
+Executing 'sm-random':
+(sm-random) begin
+(sm-random) create "bazzle"
+(sm-random) open "bazzle"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a4f8 0x804813e 0x8048a43 0x8048a6e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 272 ticks
+Thread: 0 idle ticks, 221 kernel ticks, 51 user ticks
+hda2 (filesys): 79 reads, 224 writes
+hda3 (scratch): 105 reads, 2 writes
+Console: 1231 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/sm-seq-block FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/sm-seq-block:
+0x0804a328: open (...../lib/user/syscall.c:110)
+0x08048777: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e4: test_main (...sys/base/seq-block.inc:20)
+0x08048873: main (...ild/../../tests/main.c:13)
+0x0804889e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/sm-seq-block:
+
+Copying tests/filesys/base/sm-seq-block to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run sm-seq-block
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'sm-seq-block' into the file system...
+Erasing ustar archive...
+Executing 'sm-seq-block':
+(sm-seq-block) begin
+(sm-seq-block) create "noodle"
+(sm-seq-block) open "noodle"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 286 ticks
+Thread: 0 idle ticks, 220 kernel ticks, 66 user ticks
+hda2 (filesys): 83 reads, 228 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1259 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/sm-seq-random FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x8048797 0x80480e6 0x8048893 0x80488be
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/sm-seq-random:
+0x0804a348: open (...../lib/user/syscall.c:110)
+0x08048797: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e6: test_main (...ys/base/seq-random.inc:22)
+0x08048893: main (...ild/../../tests/main.c:13)
+0x080488be: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/sm-seq-random:
+
+Copying tests/filesys/base/sm-seq-random to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run sm-seq-random
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'sm-seq-random' into the file system...
+Erasing ustar archive...
+Executing 'sm-seq-random':
+(sm-seq-random) begin
+(sm-seq-random) create "nibble"
+(sm-seq-random) open "nibble"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x8048797 0x80480e6 0x8048893 0x80488be.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 287 ticks
+Thread: 0 idle ticks, 220 kernel ticks, 67 user ticks
+hda2 (filesys): 84 reads, 228 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1265 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/lg-create FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x80485bb 0x8048102 0x8048893 0x80488be
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/lg-create:
+0x0804a348: open (...../lib/user/syscall.c:110)
+0x080485bb: check_file (...ild/../../tests/lib.c:155)
+0x08048102: test_main (...sts/filesys/create.inc:15)
+0x08048893: main (...ild/../../tests/main.c:13)
+0x080488be: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/lg-create:
+
+Copying tests/filesys/base/lg-create to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run lg-create
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'lg-create' into the file system...
+Erasing ustar archive...
+Executing 'lg-create':
+(lg-create) begin
+(lg-create) create "blargle"
+(lg-create) open "blargle" for verification
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x80485bb 0x8048102 0x8048893 0x80488be.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 329 ticks
+Thread: 0 idle ticks, 219 kernel ticks, 110 user ticks
+hda2 (filesys): 84 reads, 364 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1261 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/lg-full FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/lg-full:
+0x0804a328: open (...../lib/user/syscall.c:110)
+0x08048777: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e4: test_main (.../filesys/base/full.inc:20)
+0x08048873: main (...ild/../../tests/main.c:13)
+0x0804889e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/lg-full:
+
+Copying tests/filesys/base/lg-full to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run lg-full
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'lg-full' into the file system...
+Erasing ustar archive...
+Executing 'lg-full':
+(lg-full) begin
+(lg-full) create "quux"
+(lg-full) open "quux"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 512 ticks
+Thread: 0 idle ticks, 219 kernel ticks, 293 user ticks
+hda2 (filesys): 83 reads, 364 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1226 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/lg-random FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a528 0x8048143 0x8048a73 0x8048a9e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/lg-random:
+0x0804a528: open (...../lib/user/syscall.c:110)
+0x08048143: test_main (...ilesys/base/random.inc:33)
+0x08048a73: main (...ild/../../tests/main.c:13)
+0x08048a9e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/lg-random:
+
+Copying tests/filesys/base/lg-random to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run lg-random
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 106 sectors (53 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'lg-random' into the file system...
+Erasing ustar archive...
+Executing 'lg-random':
+(lg-random) begin
+(lg-random) create "bazzle"
+(lg-random) open "bazzle"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a528 0x8048143 0x8048a73 0x8048a9e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 521 ticks
+Thread: 0 idle ticks, 221 kernel ticks, 300 user ticks
+hda2 (filesys): 79 reads, 370 writes
+hda3 (scratch): 105 reads, 2 writes
+Console: 1232 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/lg-seq-block FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/lg-seq-block:
+0x0804a328: open (...../lib/user/syscall.c:110)
+0x08048777: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e4: test_main (...sys/base/seq-block.inc:20)
+0x08048873: main (...ild/../../tests/main.c:13)
+0x0804889e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/lg-seq-block:
+
+Copying tests/filesys/base/lg-seq-block to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run lg-seq-block
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'lg-seq-block' into the file system...
+Erasing ustar archive...
+Executing 'lg-seq-block':
+(lg-seq-block) begin
+(lg-seq-block) create "noodle"
+(lg-seq-block) open "noodle"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a328 0x8048777 0x80480e4 0x8048873 0x804889e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 515 ticks
+Thread: 0 idle ticks, 220 kernel ticks, 295 user ticks
+hda2 (filesys): 83 reads, 364 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1260 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/lg-seq-random FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x8048797 0x80480e6 0x8048893 0x80488be
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/lg-seq-random:
+0x0804a348: open (...../lib/user/syscall.c:110)
+0x08048797: seq_test (...sts/filesys/seq-test.c:16)
+0x080480e6: test_main (...ys/base/seq-random.inc:22)
+0x08048893: main (...ild/../../tests/main.c:13)
+0x080488be: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/lg-seq-random:
+
+Copying tests/filesys/base/lg-seq-random to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run lg-seq-random
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 104 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'lg-seq-random' into the file system...
+Erasing ustar archive...
+Executing 'lg-seq-random':
+(lg-seq-random) begin
+(lg-seq-random) create "nibble"
+(lg-seq-random) open "nibble"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a348 0x8048797 0x80480e6 0x8048893 0x80488be.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 516 ticks
+Thread: 0 idle ticks, 220 kernel ticks, 296 user ticks
+hda2 (filesys): 84 reads, 364 writes
+hda3 (scratch): 103 reads, 2 writes
+Console: 1266 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-read FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a408 0x8048107 0x8048953 0x804897e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/syn-read:
+0x0804a408: open (...../lib/user/syscall.c:110)
+0x08048107: test_main (...ilesys/base/syn-read.c:23)
+0x08048953: main (...ild/../../tests/main.c:13)
+0x0804897e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/syn-read:
+
+Copying tests/filesys/base/syn-read to scratch partition...
+Copying tests/filesys/base/child-syn-read to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run syn-read
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 218 sectors (109 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-read' into the file system...
+Putting 'child-syn-read' into the file system...
+Erasing ustar archive...
+Executing 'syn-read':
+(syn-read) begin
+(syn-read) create "data"
+(syn-read) open "data"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a408 0x8048107 0x8048953 0x804897e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 353 ticks
+Thread: 0 idle ticks, 305 kernel ticks, 48 user ticks
+hda2 (filesys): 111 reads, 448 writes
+hda3 (scratch): 217 reads, 2 writes
+Console: 1272 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-write FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a7a8 0x804812b 0x804893b
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+0x0804a7a8: (unknown)
+In tests/filesys/base/syn-write:
+0x0804812b: test_main (...lesys/base/syn-write.c:27)
+0x0804893b: main (...uild/../../tests/main.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/syn-write:
+
+Copying tests/filesys/base/syn-write to scratch partition...
+Copying tests/filesys/base/child-syn-wrt to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run syn-write
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 218 sectors (109 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-write' into the file system...
+Putting 'child-syn-wrt' into the file system...
+Erasing ustar archive...
+Executing 'syn-write':
+(syn-write) begin
+(syn-write) create "stuff"
+(syn-write) exec child 1 of 10: "child-syn-wrt 0"
+(syn-write) exec child 2 of 10: "child-syn-wrt 1"
+(syn-write) exec child 3 of 10: "child-syn-wrt 2"
+(syn-write) exec child 4 of 10:Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a7a8 0x804812b 0x804893b.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 446 ticks
+Thread: 0 idle ticks, 305 kernel ticks, 141 user ticks
+hda2 (filesys): 192 reads, 456 writes
+hda3 (scratch): 217 reads, 2 writes
+Console: 1426 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-remove FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a4a8 0x8048107 0x80489f3 0x8048a1e
+Translation of call stack:
+In kernel.o:
+0xc002859c: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002b912: inumber (...../userprog/syscall.c:308)
+0xc002b9c0: open (...../userprog/syscall.c:253)
+0xc002bd0f: syscall_handler (...../userprog/syscall.c:140)
+0xc0021a36: intr_handler (..../threads/interrupt.c:367)
+0xc0021b6d: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/syn-remove:
+0x0804a4a8: open (...../lib/user/syscall.c:110)
+0x08048107: test_main (...esys/base/syn-remove.c:20)
+0x080489f3: main (...ild/../../tests/main.c:13)
+0x08048a1e: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/syn-remove:
+
+Copying tests/filesys/base/syn-remove to scratch partition...
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.6.2
+                Built from SVN snapshot on May 26, 2013
+                  Compiled on Jun 26 2021 at 01:03:24
+========================================================================
+PiLo hda1
+Loading.........
+Kernel command line: -q -f extract run syn-remove
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  196,000 loops/s.
+hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
+hda1: 147 sectors (73 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 105 sectors (52 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-remove' into the file system...
+Erasing ustar archive...
+Executing 'syn-remove':
+(syn-remove) begin
+(syn-remove) create "deleteme"
+(syn-remove) open "deleteme"
+Kernel PANIC at ../../userprog/syscall.c:98 in unsupported_func(): assertion `0' failed.
+Call stack: 0xc002859c 0xc002b912 0xc002b9c0 0xc002bd0f 0xc0021a36 0xc0021b6d 0x804a4a8 0x8048107 0x80489f3 0x8048a1e.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 268 ticks
+Thread: 0 idle ticks, 220 kernel ticks, 48 user ticks
+hda2 (filesys): 85 reads, 221 writes
+hda3 (scratch): 104 reads, 2 writes
+Console: 1241 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off..

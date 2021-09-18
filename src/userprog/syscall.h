@@ -4,8 +4,7 @@
 
 void syscall_init (void);
 
-// SG_PRJ1 TODO: write prototype of general system calls
-// ...
+// SG_PRJ1 TODO_DONE: write prototype of general system calls
 #define SYSCALL_MAX_ARGC 10
 #define ABNORMAL_EXIT_CODE -1
 
@@ -22,7 +21,7 @@ int write (int fd, const void *buffer, unsigned size);
 void seek (int fd, unsigned position);
 unsigned tell (int fd);
 void close (int fd);
-
+void abnormal_exit(void);
 
 /* Project 3 and optionally project 4. */
 mapid_t mmap (int fd, void *addr);

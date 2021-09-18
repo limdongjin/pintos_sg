@@ -1,6 +1,7 @@
 #include "userprog/exception.h"
 #include <inttypes.h>
 #include <stdio.h>
+#include "userprog/syscall.h"
 #include "userprog/gdt.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
@@ -150,9 +151,9 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
   
   // TODO Memory Access Restriction
-  //.... 일단 간단히 구현 
-  if(!not_present || !user || !write) exit(-1);
-  if(fault_addr == NULL /*|| is_user_vaddr(fault_addr)*/) exit(-1);
+  // .... 일단 간단히 구현 
+  if(!not_present || !user || !write) abnormal_exit();
+  if(fault_addr == NULL /*|| is_user_vaddr(fault_addr)*/) abnormal_exit();
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
