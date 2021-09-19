@@ -41,19 +41,13 @@ is_valid_user_ptr(const void *user_ptr) {
 // if not valid, exit.
 static bool
 get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
-    ASSERT(arg != NULL);
-
-    int num_of_syscall = *(int *) esp;
-
-#define ARGV0_SET_UP() { argv[0] = (void*)((int*)esp+1); }
-#define ARGV1_SET_UP() { arg[1] = (void*)((int*)esp+2); }
-#define ARGV2_SET_UP() { arg[2] = (void*)((int*)esp+3); }
+// scope : get_argv_and_verify(...){ ... }
 #define SAVE_ARG(IDX) { arg[IDX] = (void*)((int*)esp+(IDX)+1); }
-    if (num_of_syscall == SYS_HALT) return true;
+    ASSERT(arg != NULL);
+    if (*(uint32_t*)esp == SYS_HALT) return true;
 
-    // ARGV0_SET_UP();
     SAVE_ARG(0);
-    switch (num_of_syscall) {
+    switch (*(uint32_t*)esp) {
         // case SYS_HALT:
         //    break;
         case SYS_EXIT:
@@ -62,7 +56,8 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
             break;
         case SYS_WAIT:
             break;
-        case SYS_CREATE: SAVE_ARG(1)
+        case SYS_CREATE:
+            SAVE_ARG(1);
             // ARGV1_SET_UP();
             break;
         case SYS_REMOVE:
@@ -71,13 +66,16 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
             break;
         case SYS_FILESIZE:
             break;
-        case SYS_READ: SAVE_ARG(1);
+        case SYS_READ:
+            SAVE_ARG(1);
             SAVE_ARG(2);
             break;
-        case SYS_WRITE: SAVE_ARG(1);
+        case SYS_WRITE:
+            SAVE_ARG(1);
             SAVE_ARG(2);
             break;
-        case SYS_SEEK: SAVE_ARG(1)
+        case SYS_SEEK:
+            SAVE_ARG(1)
             break;
         case SYS_TELL:
             break;
@@ -85,40 +83,32 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
             break;
         case SYS_FIBONACCI:
             break;
-        case SYS_MAX_OF_FOUR_INT: SAVE_ARG(1);
+        case SYS_MAX_OF_FOUR_INT:
+            SAVE_ARG(1);
             SAVE_ARG(2);
             SAVE_ARG(3);
             break;
         default:
             printf("unsupported syscall\n");
             return false;
-            break;
     }
-
+#undef SAVE_ARG
     if (arg[0] != NULL && !is_valid_user_ptr(arg[0])) return false;
     if (arg[1] != NULL && !is_valid_user_ptr(arg[1])) return false;
     if (arg[2] != NULL && !is_valid_user_ptr(arg[2])) return false;
+    if (arg[3] != NULL && !is_valid_user_ptr(arg[3])) return false;
 
     return true;
 }
 
-static int
-unsupported_func(void) {
-    ASSERT(0);
-    return -1; // not reached. but for compile.
-}
-
-void
-abnormal_exit(void) {
-    exit(ABNORMAL_EXIT_CODE);
-}
-
+// SG_PRJ1 TODO_DONE
 // get_argv -> verify -> syscall
 static void
 syscall_handler(struct intr_frame *f UNUSED) {
-    // SG_PRJ1 TODO_DONE
     void *syscall_arg[SYSCALL_MAX_ARGC] = {NULL,};
     bool is_success;
+
+// scope: syscall_handler(...) { ... }
 #define INT_ARG(IDX) (*(int*)syscall_arg[IDX])
 #define CHAR_PTR_ARG(IDX) (*(char**)syscall_arg[IDX])
 #define VOID_PTR_ARG(IDX) (*(void**)syscall_arg[IDX])
@@ -198,7 +188,7 @@ syscall_handler(struct intr_frame *f UNUSED) {
         case SYS_INUMBER:
             f->eax = inumber(INT_ARG(0));
             break;
-        // SG_PRJ1 TODO_DONE: register additional two syscall to handler
+            // SG_PRJ1 TODO_DONE: register additional two syscall to handler
         case SYS_FIBONACCI:
             f->eax = fibonacci(INT_ARG(0));
             break;
@@ -206,11 +196,29 @@ syscall_handler(struct intr_frame *f UNUSED) {
             f->eax = max_of_four_int(INT_ARG(0), INT_ARG(1), INT_ARG(2), INT_ARG(3));
             break;
         default:
-            printf("not fount\n");
+            printf("unsupported syscall\n");
             abnormal_exit();
     }
     // thread_exit ();
+#undef INT_ARG
+#undef CHAR_PTR_ARG
+#undef VOID_PTR_ARG
+#undef UNSIGNED_ARG
+
 }
+
+
+static int
+unsupported_func(void) {
+    ASSERT(0);
+    return -1; // not reached. but for compile.
+}
+
+void
+abnormal_exit(void) {
+    exit(ABNORMAL_EXIT_CODE);
+}
+
 
 // SG_PRJ1 TODO_DONE: Define General System Calls Implementation
 void

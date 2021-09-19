@@ -6,7 +6,7 @@ void syscall_init (void);
 
 // SG_PRJ1 TODO_DONE: write prototype of general system calls
 #define SYSCALL_MAX_ARGC 10
-#define ABNORMAL_EXIT_CODE -1
+#define ABNORMAL_EXIT_CODE (-1)
 
 void halt (void);
 void exit (int status);

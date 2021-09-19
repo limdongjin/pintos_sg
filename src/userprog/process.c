@@ -94,7 +94,7 @@ process_wait (tid_t child_tid UNUSED)
   struct list_elem* el;
   struct list_elem* end_el;
   struct thread* t;
-  int ret = -1;
+  int ret;
 
   el = list_begin(&(thread_current()->child_list));
   end_el = list_end(&(thread_current()->child_list));
@@ -224,8 +224,8 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
 
-void 
-parse_cmdline(char *cmdline, int *argc_p, char *argv[128]) {
+static void
+parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]) {
     char* cur, *rest;
     int i = 0;
 
@@ -236,10 +236,10 @@ parse_cmdline(char *cmdline, int *argc_p, char *argv[128]) {
 
     *argc_p = i;
 }
-void
+
+static void
 push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp){
     ASSERT( 0 <= argc && argc < CMD_ARGC_LIMIT );
-    //int i, tmp;
     uint32_t i, tmp;
     void* argv_addr[CMD_ARGC_LIMIT];
     void* cur_esp = *esp;
@@ -253,30 +253,30 @@ push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp){
         argv_addr[i] = cur_esp;
     }
 
-   // word align_new
-   while( (*(uint32_t*)(*esp)) % sizeof(uint32_t) != 0) {
-		*esp-=sizeof(uint8_t);
-		*(uint8_t *)*esp=0;
+    // align
+    while( (*(uint32_t*)(cur_esp)) % 4 != 0) {
+        cur_esp -= sizeof(uint8_t);
+        *(uint8_t *)cur_esp = 0;
     }
-    
-   // last null
-    memset((cur_esp-=4), 0, 4);
 
-    // argv_addr -> stack
+   // null
+    memset((cur_esp -= sizeof(char*)), 0, sizeof(char*));
+
+    // push argv_addr[i] for i
     i = argc;
     while(i--)
-      memcpy((cur_esp -= 4), &(argv_addr[i]), 4);
+      memcpy((cur_esp -= sizeof(char*)), &(argv_addr[i]), sizeof(char*));
     
 
-    // set **argv
+    // push **argv
     argv_addr[argc] = cur_esp;
-    memcpy((cur_esp -= 4), &(argv_addr[argc]), 4);
+    memcpy((cur_esp -= sizeof(char**)), &(argv_addr[argc]), sizeof(char**));
 
-    // set argc
-    memcpy((cur_esp -= 4), &argc, 4);
+    // push argc
+    memcpy((cur_esp -= sizeof(int)), &argc, sizeof(int));
 
-    // setting ret addr
-    memset((cur_esp -= 4), 0, 4);
+    // push ret addr
+    memset((cur_esp -= sizeof( void(*)() )), 0, sizeof( void(*)() ));
 
     *esp = cur_esp;
 }
@@ -297,7 +297,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   int cmd_argc = 0;
   
   // NOTE. cmd_argv's component is cmd_cpy's relative pointer that passed by strtok_r(..) 
-  // so, you MUST ONLY free(cmd_cpy) 
+  // SO, you MUST ONLY free(cmd_cpy)
   char* cmd_argv[CMD_ARGC_LIMIT]; 
   char* cmd_cpy = NULL;
   
@@ -312,7 +312,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   memcpy(cmd_cpy, file_name, strlen(file_name)+1);
 
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
-  memcpy(t->name, cmd_argv[0], 16);
+  memcpy(t->name, cmd_argv[0], sizeof(t->name)/sizeof(char));
 
   /* Open executable file. */
   file = filesys_open (cmd_argv[0]);
