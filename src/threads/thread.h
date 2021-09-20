@@ -97,11 +97,11 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    struct semaphore child_sema;
-    struct semaphore dead_child_sema;
+    struct semaphore p_sema;
+    struct semaphore i_sema;
 
     struct list child_list;
-    struct list_elem elem_child;
+    struct list_elem i_elem;
     int exit_code;
 #endif
 

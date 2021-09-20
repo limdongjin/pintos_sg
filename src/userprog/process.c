@@ -90,7 +90,6 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-   // TODO_DONE prcess_wait mechanism upgrade..!!
   struct list_elem* el;
   struct list_elem* end_el;
   struct thread* t;
@@ -99,15 +98,15 @@ process_wait (tid_t child_tid UNUSED)
   el = list_begin(&(thread_current()->child_list));
   end_el = list_end(&(thread_current()->child_list));
 
-  while(el != end_el && (t = list_entry(el, struct thread, elem_child))->tid != child_tid)
+  while(el != end_el && (t = list_entry(el, struct thread, i_elem))->tid != child_tid)
     el = list_next(el);
   
   if(el == end_el || t == NULL) return -1;
 
-  sema_down(&(t->child_sema));
+  sema_down(&(t->p_sema));
   ret = t->exit_code;  
-  list_remove(&(t->elem_child));
-  sema_up(&(t->dead_child_sema));
+  list_remove(&(t->i_elem));
+  sema_up(&(t->i_sema));
   
   return ret;
 }
@@ -135,8 +134,8 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
-  sema_up(&(cur->child_sema));
-  sema_down(&(cur->dead_child_sema));
+  sema_up(&(cur->p_sema));
+  sema_down(&(cur->i_sema));
 }
 
 /* Sets up the CPU for running user code in the current

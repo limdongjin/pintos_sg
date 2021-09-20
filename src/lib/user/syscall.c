@@ -74,8 +74,8 @@
                : [number] "i" (NUMBER),                         \
                  [arg0] "r" (ARG0),                             \
                  [arg1] "r" (ARG1),                             \
-                 [arg2] "r" (ARG2),	                            \
-		         [arg3] "r" (ARG3)                              \
+                 [arg2] "r" (ARG2),	                        \
+		         [arg3] "r" (ARG3)                      \
                : "memory");                                     \
           retval;                                               \
         })

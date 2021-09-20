@@ -228,7 +228,6 @@ halt(void) {
 
 void
 exit(int status) {
-    // TODO exit() synchronization..?
     struct thread *t = thread_current();
     t->exit_code = status;
     printf("%s: exit(%d)\n", t->name, status);
@@ -247,7 +246,6 @@ write(int fd, const void *buffer, unsigned size) {
 
 pid_t
 exec(const char *cmd_line) {
-    // is_valid_string
     char *file_name = (char *) malloc(sizeof(char) * (strlen(cmd_line) + 1));
     char *tmp;
     struct file *file_obj;
