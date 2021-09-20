@@ -41,12 +41,17 @@ is_valid_user_ptr(const void *user_ptr) {
 // if not valid, exit.
 static bool
 get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
-// scope : get_argv_and_verify(...){ ... }
-#define SAVE_ARG(IDX) { arg[IDX] = (void*)((int*)esp+(IDX)+1); }
+// scope : get_arg_and_verify(...){ ... }
+#define SAVE_ARG_AND_VERIFY(IDX)                       \
+   ({                                                  \
+	arg[IDX] = (void*)((int*)esp+(IDX)+1);         \
+	if(!is_valid_user_ptr(arg[IDX])) return false; \
+    })
+
     ASSERT(arg != NULL);
     if (*(uint32_t*)esp == SYS_HALT) return true;
 
-    SAVE_ARG(0);
+    SAVE_ARG_AND_VERIFY(0);
     switch (*(uint32_t*)esp) {
         // case SYS_HALT:
         //    break;
@@ -57,8 +62,7 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
         case SYS_WAIT:
             break;
         case SYS_CREATE:
-            SAVE_ARG(1);
-            // ARGV1_SET_UP();
+            SAVE_ARG_AND_VERIFY(1);
             break;
         case SYS_REMOVE:
             break;
@@ -67,15 +71,15 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
         case SYS_FILESIZE:
             break;
         case SYS_READ:
-            SAVE_ARG(1);
-            SAVE_ARG(2);
+            SAVE_ARG_AND_VERIFY(1);
+            SAVE_ARG_AND_VERIFY(2);
             break;
         case SYS_WRITE:
-            SAVE_ARG(1);
-            SAVE_ARG(2);
+            SAVE_ARG_AND_VERIFY(1);
+            SAVE_ARG_AND_VERIFY(2);
             break;
         case SYS_SEEK:
-            SAVE_ARG(1)
+            SAVE_ARG_AND_VERIFY(1);
             break;
         case SYS_TELL:
             break;
@@ -84,19 +88,18 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
         case SYS_FIBONACCI:
             break;
         case SYS_MAX_OF_FOUR_INT:
-            SAVE_ARG(1);
-            SAVE_ARG(2);
-            SAVE_ARG(3);
+            SAVE_ARG_AND_VERIFY(1);
+            SAVE_ARG_AND_VERIFY(2);
+            SAVE_ARG_AND_VERIFY(3);
             break;
         default:
             printf("unsupported syscall\n");
             return false;
     }
-#undef SAVE_ARG
-    if (arg[0] != NULL && !is_valid_user_ptr(arg[0])) return false;
-    if (arg[1] != NULL && !is_valid_user_ptr(arg[1])) return false;
-    if (arg[2] != NULL && !is_valid_user_ptr(arg[2])) return false;
-    if (arg[3] != NULL && !is_valid_user_ptr(arg[3])) return false;
+#undef SAVE_ARG_AND_VERIFY
+    // if (arg[1] != NULL && !is_valid_user_ptr(arg[1])) return false;
+    // if (arg[2] != NULL && !is_valid_user_ptr(arg[2])) return false;
+    // if (arg[3] != NULL && !is_valid_user_ptr(arg[3])) return false;
 
     return true;
 }
