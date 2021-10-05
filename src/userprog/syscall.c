@@ -354,7 +354,7 @@ int filesize(int fd UNUSED) {
 }
 
 int read(int fd, void *buffer, unsigned size) {
-    int i = 0;
+    unsigned i = 0;
     bool success = true;
     check_user_ptr(buffer);
     if(fd == 1 || fd == 2) {
@@ -376,7 +376,7 @@ int read(int fd, void *buffer, unsigned size) {
  read_done:
     lock_release(&file_lock);
     if(!success) exit(-1);
-    return i;
+    return (int)i;
 }
 
 void seek(int fd UNUSED, unsigned position UNUSED) {
