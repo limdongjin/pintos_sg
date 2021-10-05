@@ -53,7 +53,7 @@ process_execute (const char *file_name)
       e = list_next(e)
   ){
       t = list_entry(e, struct thread, i_elem);
-      if(t->flag == 1) process_wait(tid);
+      if(t->flag == 1) return process_wait(tid);
   }
 
   return tid;
@@ -74,13 +74,14 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
-    sema_up(&thread_current()->parent->child_execute_sema);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
+
+  sema_up(&thread_current()->parent->child_execute_sema);
   if (!success) {
       thread_current()->flag = 1;
-      thread_exit();
+      exit(-1);
   }
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
