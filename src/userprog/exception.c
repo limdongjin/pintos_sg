@@ -149,8 +149,7 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
-  
-  if(!not_present || !user || !write) abnormal_exit();
+ if(not_present || !user || !write || is_kernel_vaddr(fault_addr)) abnormal_exit();
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
