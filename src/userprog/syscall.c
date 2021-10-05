@@ -22,7 +22,7 @@ struct file
 };
 static void syscall_handler(struct intr_frame *);
 
-static bool is_valid_user_ptr(const void *user_ptr);
+static bool check_user_ptr(const void *user_ptr);
 
 static bool get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]);
 
@@ -34,18 +34,14 @@ syscall_init(void) {
     lock_init(&file_lock);
 }
 
-static inline void
-check_user_string_l (const char *str, unsigned size, void *esp)
-{
-    while (size--)
-        if(!is_valid_user_ptr((void *) (str++))) exit(-1);
-}
-
 static bool
-is_valid_user_ptr(const void *user_ptr) {
-    if (!user_ptr || !is_user_vaddr(user_ptr) ||
-        !pagedir_get_page(thread_current()->pagedir, user_ptr))
-        return false;
+check_user_ptr(const void *user_ptr) {
+    if(!is_user_vaddr(user_ptr) ||
+       !user_ptr ||
+       !pagedir_get_page(thread_current()->pagedir, user_ptr))
+    {
+        exit(-1);
+    }
 
     return true;
 }
@@ -57,7 +53,7 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
 // scope : get_arg_and_verify(...){ ... }
 #define SAVE_ARG_AND_VERIFY(IDX)                       \
    ({                                                  \
-    if(!is_valid_user_ptr((void*)((int*)esp+(IDX)+1))) return false;                                                   \
+    check_user_ptr((void*)((int*)esp+(IDX)+1)); \
 	arg[IDX] = (void*)((int*)esp+(IDX)+1);                \
     })
 
@@ -110,9 +106,6 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
             return false;
     }
 #undef SAVE_ARG_AND_VERIFY
-    // if (arg[1] != NULL && !is_valid_user_ptr(arg[1])) return false;
-    // if (arg[2] != NULL && !is_valid_user_ptr(arg[2])) return false;
-    // if (arg[3] != NULL && !is_valid_user_ptr(arg[3])) return false;
 
     return true;
 }
@@ -156,18 +149,19 @@ syscall_handler(struct intr_frame *f UNUSED) {
             f->eax = remove(CHAR_PTR_ARG(0));
             break;
         case SYS_OPEN:
+            check_user_ptr(CHAR_PTR_ARG(0));
             f->eax = open(CHAR_PTR_ARG(0));
             break;
         case SYS_FILESIZE:
-            filesize(INT_ARG(0));
+            f->eax = filesize(INT_ARG(0));
             break;
         case SYS_READ:
-            // check_user_string_l ((const char *) syscall_arg[1], (unsigned) syscall_arg[2], f->esp);
             f->eax = read(INT_ARG(0),
                  VOID_PTR_ARG(1),
                  UNSIGNED_ARG(2));
             break;
         case SYS_WRITE:
+             check_user_ptr(VOID_PTR_ARG(1));
             f->eax = write(INT_ARG(0),
                            VOID_PTR_ARG(1),
                            UNSIGNED_ARG(2));
@@ -205,7 +199,6 @@ syscall_handler(struct intr_frame *f UNUSED) {
         case SYS_INUMBER:
             f->eax = inumber(INT_ARG(0));
             break;
-            // SG_PRJ1 TODO_DONE: register additional two syscall to handler
         case SYS_FIBONACCI:
             f->eax = fibonacci(INT_ARG(0));
             break;
@@ -233,7 +226,6 @@ unsupported_func(void) {
 
 void
 abnormal_exit(void) {
-    //printf("abnormal\n");
     exit(ABNORMAL_EXIT_CODE);
 }
 
@@ -241,33 +233,26 @@ abnormal_exit(void) {
 // SG_PRJ1 TODO_DONE: Define General System Calls Implementation
 void
 halt(void) {
-    //printf("halt\n");
     shutdown_power_off();
 }
 
 void
 exit(int status) {
-    //printf("exit\n");
-    struct thread *t = thread_current();
-    t->exit_code = status;
-    printf("%s: exit(%d)\n", t->name, status);
-
+    // struct thread *t = thread_current();
     int i;
+    struct list_elem* e = NULL;
 
-    for(i=3;i<128;i++) {
-        if(thread_current()->fd[i] == NULL) continue;
-        close(i);
-    }
+    thread_current()->exit_code = status;
+    printf("%s: exit(%d)\n", thread_current()->name, status);
 
-    struct thread* tt = NULL;
-    struct list_elem* elem = NULL;
-    for(elem = list_begin(&thread_current()->child_list);
-        elem != list_end(&thread_current()->child_list);
-        elem = list_next(elem)
-    ){
+    i = 3;
+    while(i < 128 && thread_current()->fd[i] != NULL) close(i++);
 
-        tt = list_entry(elem, struct thread, i_elem);
-        process_wait(tt->tid);
+    for(e = list_begin(&thread_current()->child_list);
+        e != list_end(&thread_current()->child_list);
+        e = list_next(e))
+    {
+        process_wait(list_entry(e, struct thread, i_elem)->tid);
     }
 
     thread_exit();
@@ -276,57 +261,50 @@ exit(int status) {
 int
 write(int fd, const void *buffer, unsigned size) {
     if(fd == 0 || fd == 2) abnormal_exit();
-     //printf("write\n");
     struct file* cfp;
 
-     if(!is_valid_user_ptr(buffer)) exit(-1);
-    int ret = -1;
+    check_user_ptr(buffer);
+    int ret;
+    bool success = true;
 
     lock_acquire(&file_lock);
 
-     if (fd == 1) { // console
+    if (fd == 1) { // console
         putbuf((char *) buffer, size);
         ret = size;
-        lock_release(&file_lock);
-        return ret;
+        goto write_done;
     }
 
-     if(thread_current()->fd[fd]==NULL){
-         lock_release(&file_lock);
-         exit(-1);
-     }
-     struct thread* cur = thread_current();
-     cfp = cur->fd[fd];
-     if(cfp->deny_write){
-         file_deny_write(cfp);
-     }
+    if(thread_current()->fd[fd]==NULL){
+        success = false;
+        goto write_done;
+    }
+
+     cfp = thread_current()->fd[fd];
+     if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(cfp, buffer, size);
 
-    lock_release(&file_lock);
+ write_done:
+     lock_release(&file_lock);
+     if(!success) exit(-1);
+
      return ret;
 }
 
 pid_t
 exec(const char *cmd_line) {
-    ///printf("exec\n");
-    char *file_name = (char *) malloc(sizeof(char) * (strlen(cmd_line) + 1));
-    // char file_name[130];
-    char *tmp;
-    struct file *file_obj;
-    //memcpy(file_name, cmd_line, strlen(cmd_line)+1);
-    strlcpy(file_name, cmd_line, strlen(cmd_line) + 1);
+    char file_name[130];
+    struct file *fp;
+    int i = 0;
 
-    file_name = strtok_r(file_name, " ", &tmp);
-    file_obj = filesys_open(file_name);
-    free(file_name);
+    while(cmd_line[i] != ' ' && (file_name[i] = cmd_line[i]) != '\0') i++;
+    file_name[i] = '\0';
 
-    if (file_obj == NULL) {
-        //printf("exec : fileobj not exist\n");
-        return ABNORMAL_EXIT_CODE;
-        //abnormal_exit();
-    }
+    fp = filesys_open(file_name);
 
-    // file_close(file_obj);
+    if (fp == NULL) return ABNORMAL_EXIT_CODE;
+
+    file_close(fp);
 
     return process_execute(cmd_line);
 }
@@ -336,40 +314,37 @@ int wait(pid_t pid) {
 }
 
 bool create(const char *file, unsigned initial_size) {
-     //printf("create\n");
-    if(file == NULL) exit(-1);
-    if(!is_valid_user_ptr(file)) exit(-1);
+     if(file == NULL) exit(-1);
+    check_user_ptr(file);
 
     return filesys_create(file, initial_size);
 }
 
 bool remove(const char *file) {
-     //printf("remove\n");
-    if(file == NULL) exit(-1);
-    if(!is_valid_user_ptr(file)) exit(-1);
+     if(file == NULL) exit(-1);
+     check_user_ptr(file);
 
     return filesys_remove(file);
 }
 
 int open(const char *file UNUSED) {
-    if(file == NULL) {
-        exit(-1);
-    }
+    if(file == NULL) exit(-1);
+    int i, ret = -1;
+
     lock_acquire(&file_lock);
     struct file* fp = filesys_open(file);
-    int i, ret;
-    if(fp == NULL){
-        ret = -1;
-    }else {
-        for(i=3;i<128;i++) {
-            if (thread_current()->fd[i] != NULL) continue;
-            if(strcmp(thread_name(), file) == 0) file_deny_write(fp);
-            thread_current()->fd[i] = fp;
-            ret = i;
-            break;
-        }
+    if(fp == NULL) goto open_done;
+
+    i = 3;
+    while(i < 128 && thread_current()->fd[i] != NULL) i++;
+    if(i < 128){
+        if(strcmp(thread_name(), file) == 0) file_deny_write(fp);
+        thread_current()->fd[i] = fp;
+        ret = i;
     }
+ open_done:
     lock_release(&file_lock);
+
     return ret;
 }
 
@@ -379,29 +354,28 @@ int filesize(int fd UNUSED) {
 }
 
 int read(int fd, void *buffer, unsigned size) {
-    int i = -1;
-    if(!is_valid_user_ptr(buffer) || fd == 1 || fd == 2) {
+    int i = 0;
+    bool success = true;
+    check_user_ptr(buffer);
+    if(fd == 1 || fd == 2) {
         abnormal_exit();
     }
-     lock_acquire(&file_lock);
+
+    lock_acquire(&file_lock);
     if (fd == 0) { // console
-        for (i = 0; i < size; i++) {
-            if(input_getc()=='\0')
-                break;
-        }
-        lock_release(&file_lock);
-        return i;
+        while(i < size && input_getc() != '\0' && i++);
+        goto read_done;
     }
 
-    struct thread* cur = thread_current();
     if(thread_current()->fd[fd] == NULL){
-        lock_release(&file_lock);
-        exit(-1);
+        success = false;
+        goto read_done;
     }
-    i = file_read(cur->fd[fd], buffer, size);
-//    printf("read %d\n", i);
 
+    i = file_read(thread_current()->fd[fd], buffer, size);
+ read_done:
     lock_release(&file_lock);
+    if(!success) exit(-1);
     return i;
 }
 
@@ -419,10 +393,8 @@ void close(int fd UNUSED) {
     struct file* fp = thread_current()->fd[fd];
 
     if(fp == NULL) abnormal_exit();
-    //file_close(fp);
-    //thread_current()->fd[fd] = NULL;
-    fp = NULL;
     file_close(fp);
+    thread_current()->fd[fd] = NULL;
 }
 
 /* Project 3 and optionally project 4. */
