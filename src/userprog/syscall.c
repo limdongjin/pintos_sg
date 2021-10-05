@@ -110,8 +110,6 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
     return true;
 }
 
-// SG_PRJ1 TODO_DONE
-// get_argv -> verify -> syscall
 static void
 syscall_handler(struct intr_frame *f UNUSED) {
     void *syscall_arg[SYSCALL_MAX_ARGC] = {NULL,};
@@ -230,7 +228,6 @@ abnormal_exit(void) {
 }
 
 
-// SG_PRJ1 TODO_DONE: Define General System Calls Implementation
 void
 halt(void) {
     shutdown_power_off();
@@ -238,7 +235,6 @@ halt(void) {
 
 void
 exit(int status) {
-    // struct thread *t = thread_current();
     int i;
     struct list_elem* e = NULL;
 

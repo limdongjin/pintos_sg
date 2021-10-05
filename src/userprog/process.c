@@ -17,6 +17,7 @@
 #include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "userprog/syscall.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -32,6 +33,7 @@ process_execute (const char *file_name)
 {
   char *fn_copy;
   tid_t tid;
+  struct list_elem* e = NULL;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -46,14 +48,12 @@ process_execute (const char *file_name)
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy);
 
-  struct list_elem* e = NULL;
-  struct thread* t = NULL;
   for(e = list_begin(&thread_current()->child_list);
       e != list_end(&thread_current()->child_list);
       e = list_next(e)
   ){
-      t = list_entry(e, struct thread, i_elem);
-      if(t->flag == 1) return process_wait(tid);
+      if(list_entry(e, struct thread, i_elem)->flag == 1)
+          return process_wait(tid);
   }
 
   return tid;
@@ -168,7 +168,7 @@ process_activate (void)
      interrupts. */
   tss_update ();
 }
-
+
 /* We load ELF binaries.  The following definitions are taken
    from the ELF specification, [ELF1], more-or-less verbatim.  */
 
