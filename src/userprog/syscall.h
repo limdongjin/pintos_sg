@@ -1,5 +1,6 @@
 #ifndef USERPROG_SYSCALL_H
 #define USERPROG_SYSCALL_H
+
 #include "lib/user/syscall.h"
 
 void syscall_init (void);
@@ -38,5 +39,7 @@ int inumber (int fd);
 // SG_PRJ1 TODO_DONE: write prototype of 2 new system call APIs
 int fibonacci(int n);
 int max_of_four_int(int a, int b, int c, int d);
+
+struct lock file_lock;
 
 #endif /* userprog/syscall.h */

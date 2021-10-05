@@ -1,3 +1,3 @@
 
 # run with existed grade file.
-cat grade | grep -E 'args|exec|wait|multi-recurse|exit|halt|sc-'
+cat grade | grep -E 'create-|open-|read-|write-|close-|rox-|read-|multi-|exec-|bad-|sm-|syn-'

@@ -14,7 +14,12 @@
 #include "filesys/file.h"
 #include "devices/input.h"
 // #include "lib/user/syscall.h"
-
+struct file
+{
+    struct inode *inode;        /* File's inode. */
+    off_t pos;                  /* Current position. */
+    bool deny_write;            /* Has file_deny_write() been called? */
+};
 static void syscall_handler(struct intr_frame *);
 
 static bool is_valid_user_ptr(const void *user_ptr);
@@ -26,6 +31,14 @@ static int unsupported_func(void);
 void
 syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
+    lock_init(&file_lock);
+}
+
+static inline void
+check_user_string_l (const char *str, unsigned size, void *esp)
+{
+    while (size--)
+        if(!is_valid_user_ptr((void *) (str++))) exit(-1);
 }
 
 static bool
@@ -44,8 +57,8 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
 // scope : get_arg_and_verify(...){ ... }
 #define SAVE_ARG_AND_VERIFY(IDX)                       \
    ({                                                  \
-	arg[IDX] = (void*)((int*)esp+(IDX)+1);         \
-	if(!is_valid_user_ptr(arg[IDX])) return false; \
+    if(!is_valid_user_ptr((void*)((int*)esp+(IDX)+1))) return false;                                                   \
+	arg[IDX] = (void*)((int*)esp+(IDX)+1);                \
     })
 
     ASSERT(arg != NULL);
@@ -140,16 +153,17 @@ syscall_handler(struct intr_frame *f UNUSED) {
                             UNSIGNED_ARG(1));
             break;
         case SYS_REMOVE:
-            remove(CHAR_PTR_ARG(0));
+            f->eax = remove(CHAR_PTR_ARG(0));
             break;
         case SYS_OPEN:
-            open(CHAR_PTR_ARG(0));
+            f->eax = open(CHAR_PTR_ARG(0));
             break;
         case SYS_FILESIZE:
             filesize(INT_ARG(0));
             break;
         case SYS_READ:
-            read(INT_ARG(0),
+            // check_user_string_l ((const char *) syscall_arg[1], (unsigned) syscall_arg[2], f->esp);
+            f->eax = read(INT_ARG(0),
                  VOID_PTR_ARG(1),
                  UNSIGNED_ARG(2));
             break;
@@ -219,6 +233,7 @@ unsupported_func(void) {
 
 void
 abnormal_exit(void) {
+    //printf("abnormal\n");
     exit(ABNORMAL_EXIT_CODE);
 }
 
@@ -226,42 +241,92 @@ abnormal_exit(void) {
 // SG_PRJ1 TODO_DONE: Define General System Calls Implementation
 void
 halt(void) {
+    //printf("halt\n");
     shutdown_power_off();
 }
 
 void
 exit(int status) {
+    //printf("exit\n");
     struct thread *t = thread_current();
     t->exit_code = status;
     printf("%s: exit(%d)\n", t->name, status);
+
+    int i;
+
+    for(i=3;i<128;i++) {
+        if(thread_current()->fd[i] == NULL) continue;
+        close(i);
+    }
+
+    struct thread* tt = NULL;
+    struct list_elem* elem = NULL;
+    for(elem = list_begin(&thread_current()->child_list);
+        elem != list_end(&thread_current()->child_list);
+        elem = list_next(elem)
+    ){
+
+        tt = list_entry(elem, struct thread, i_elem);
+        process_wait(tt->tid);
+    }
 
     thread_exit();
 }
 
 int
 write(int fd, const void *buffer, unsigned size) {
-    if (fd == 1) { // console
+    if(fd == 0 || fd == 2) abnormal_exit();
+     //printf("write\n");
+    struct file* cfp;
+
+     if(!is_valid_user_ptr(buffer)) exit(-1);
+    int ret = -1;
+
+    lock_acquire(&file_lock);
+
+     if (fd == 1) { // console
         putbuf((char *) buffer, size);
-        return size;
+        ret = size;
+        lock_release(&file_lock);
+        return ret;
     }
-    return ABNORMAL_EXIT_CODE;
+
+     if(thread_current()->fd[fd]==NULL){
+         lock_release(&file_lock);
+         exit(-1);
+     }
+     struct thread* cur = thread_current();
+     cfp = cur->fd[fd];
+     if(cfp->deny_write){
+         file_deny_write(cfp);
+     }
+     ret = file_write(cfp, buffer, size);
+
+    lock_release(&file_lock);
+     return ret;
 }
 
 pid_t
 exec(const char *cmd_line) {
+    ///printf("exec\n");
     char *file_name = (char *) malloc(sizeof(char) * (strlen(cmd_line) + 1));
+    // char file_name[130];
     char *tmp;
     struct file *file_obj;
-
+    //memcpy(file_name, cmd_line, strlen(cmd_line)+1);
     strlcpy(file_name, cmd_line, strlen(cmd_line) + 1);
+
     file_name = strtok_r(file_name, " ", &tmp);
     file_obj = filesys_open(file_name);
     free(file_name);
 
-    if (!file_obj) {
+    if (file_obj == NULL) {
+        //printf("exec : fileobj not exist\n");
         return ABNORMAL_EXIT_CODE;
+        //abnormal_exit();
     }
-    file_close(file_obj);
+
+    // file_close(file_obj);
 
     return process_execute(cmd_line);
 }
@@ -271,45 +336,93 @@ int wait(pid_t pid) {
 }
 
 bool create(const char *file, unsigned initial_size) {
-    if (strlen(file) == 0) return false;
+     //printf("create\n");
+    if(file == NULL) exit(-1);
+    if(!is_valid_user_ptr(file)) exit(-1);
+
     return filesys_create(file, initial_size);
 }
 
 bool remove(const char *file) {
+     //printf("remove\n");
+    if(file == NULL) exit(-1);
+    if(!is_valid_user_ptr(file)) exit(-1);
+
     return filesys_remove(file);
 }
 
 int open(const char *file UNUSED) {
-    return unsupported_func();
+    if(file == NULL) {
+        exit(-1);
+    }
+    lock_acquire(&file_lock);
+    struct file* fp = filesys_open(file);
+    int i, ret;
+    if(fp == NULL){
+        ret = -1;
+    }else {
+        for(i=3;i<128;i++) {
+            if (thread_current()->fd[i] != NULL) continue;
+            if(strcmp(thread_name(), file) == 0) file_deny_write(fp);
+            thread_current()->fd[i] = fp;
+            ret = i;
+            break;
+        }
+    }
+    lock_release(&file_lock);
+    return ret;
 }
 
 int filesize(int fd UNUSED) {
-    return unsupported_func();
+    if(thread_current()->fd[fd] == NULL) exit(-1);
+    return (int)file_length(thread_current()->fd[fd]);
 }
 
 int read(int fd, void *buffer, unsigned size) {
-    uint8_t *console_buf;
-    unsigned i;
-
+    int i = -1;
+    if(!is_valid_user_ptr(buffer) || fd == 1 || fd == 2) {
+        abnormal_exit();
+    }
+     lock_acquire(&file_lock);
     if (fd == 0) { // console
-        console_buf = (uint8_t *) buffer;
-        for (i = 0; i < size; i++) console_buf[i] = input_getc();
-        return size;
+        for (i = 0; i < size; i++) {
+            if(input_getc()=='\0')
+                break;
+        }
+        lock_release(&file_lock);
+        return i;
     }
 
-    return unsupported_func();
+    struct thread* cur = thread_current();
+    if(thread_current()->fd[fd] == NULL){
+        lock_release(&file_lock);
+        exit(-1);
+    }
+    i = file_read(cur->fd[fd], buffer, size);
+//    printf("read %d\n", i);
+
+    lock_release(&file_lock);
+    return i;
 }
 
 void seek(int fd UNUSED, unsigned position UNUSED) {
-    unsupported_func();
+    if(thread_current()->fd[fd] == NULL) abnormal_exit();
+    file_seek(thread_current()->fd[fd], position);
 }
 
 unsigned tell(int fd UNUSED) {
-    return unsupported_func();
+    if(thread_current()->fd[fd] == NULL) abnormal_exit();
+    return (unsigned )file_tell(thread_current()->fd[fd]);
 }
 
 void close(int fd UNUSED) {
-    unsupported_func();
+    struct file* fp = thread_current()->fd[fd];
+
+    if(fp == NULL) abnormal_exit();
+    //file_close(fp);
+    //thread_current()->fd[fd] = NULL;
+    fp = NULL;
+    file_close(fp);
 }
 
 /* Project 3 and optionally project 4. */
