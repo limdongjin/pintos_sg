@@ -46,8 +46,6 @@ check_user_ptr(const void *user_ptr) {
     return true;
 }
 
-// get arg. and verify
-// if not valid, exit.
 static bool
 get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
 // scope : get_arg_and_verify(...){ ... }
@@ -305,25 +303,29 @@ exec(const char *cmd_line) {
     return process_execute(cmd_line);
 }
 
-int wait(pid_t pid) {
+int
+wait(pid_t pid) {
     return process_wait(pid);
 }
 
-bool create(const char *file, unsigned initial_size) {
+bool
+create(const char *file, unsigned initial_size) {
      if(file == NULL) exit(-1);
     check_user_ptr(file);
 
     return filesys_create(file, initial_size);
 }
 
-bool remove(const char *file) {
+bool
+remove(const char *file) {
      if(file == NULL) exit(-1);
      check_user_ptr(file);
 
     return filesys_remove(file);
 }
 
-int open(const char *file UNUSED) {
+int
+open(const char *file UNUSED) {
     if(file == NULL) exit(-1);
     int i, ret = -1;
 
@@ -344,12 +346,14 @@ int open(const char *file UNUSED) {
     return ret;
 }
 
-int filesize(int fd UNUSED) {
+int
+filesize(int fd UNUSED) {
     if(thread_current()->fd[fd] == NULL) exit(-1);
     return (int)file_length(thread_current()->fd[fd]);
 }
 
-int read(int fd, void *buffer, unsigned size) {
+int
+read(int fd, void *buffer, unsigned size) {
     unsigned i = 0;
     bool success = true;
     check_user_ptr(buffer);
@@ -375,17 +379,20 @@ int read(int fd, void *buffer, unsigned size) {
     return (int)i;
 }
 
-void seek(int fd UNUSED, unsigned position UNUSED) {
+void
+seek(int fd UNUSED, unsigned position UNUSED) {
     if(thread_current()->fd[fd] == NULL) abnormal_exit();
     file_seek(thread_current()->fd[fd], position);
 }
 
-unsigned tell(int fd UNUSED) {
+unsigned
+tell(int fd UNUSED) {
     if(thread_current()->fd[fd] == NULL) abnormal_exit();
     return (unsigned )file_tell(thread_current()->fd[fd]);
 }
 
-void close(int fd UNUSED) {
+void
+close(int fd UNUSED) {
     struct file* fp = thread_current()->fd[fd];
 
     if(fp == NULL) abnormal_exit();
@@ -394,37 +401,45 @@ void close(int fd UNUSED) {
 }
 
 /* Project 3 and optionally project 4. */
-mapid_t mmap(int fd UNUSED, void *addr UNUSED) {
+mapid_t
+mmap(int fd UNUSED, void *addr UNUSED) {
     return unsupported_func();
 }
 
-void munmap(mapid_t t UNUSED) {
+void
+munmap(mapid_t t UNUSED) {
     unsupported_func();
 }
 
 /* Project 4 only. */
-bool chdir(const char *dir UNUSED) {
+bool
+chdir(const char *dir UNUSED) {
     return unsupported_func();
 }
 
-bool mkdir(const char *dir UNUSED) {
+bool
+mkdir(const char *dir UNUSED) {
     return unsupported_func();
 }
 
-bool readdir(int fd UNUSED, char name[READDIR_MAX_LEN + 1] UNUSED) {
+bool
+readdir(int fd UNUSED, char name[READDIR_MAX_LEN + 1] UNUSED) {
     return unsupported_func();
 }
 
-bool isdir(int fd UNUSED) {
+bool
+isdir(int fd UNUSED) {
     return unsupported_func();
 }
 
-int inumber(int fd UNUSED) {
+int
+inumber(int fd UNUSED) {
     return unsupported_func();
 }
 
 // SG_PRJ1 TODO_DONE: Define fibonacci() and max_of_four_int() system calls
-int fibonacci(int n) {
+int
+fibonacci(int n) {
     int n1 = 1, n2 = 1, ret = 1, i;
     if (n == 0) return 0;
     for (i = 3; i <= n; i++) {
@@ -435,7 +450,8 @@ int fibonacci(int n) {
     return ret;
 }
 
-int max_of_four_int(int a, int b, int c, int d) {
+int
+max_of_four_int(int a, int b, int c, int d) {
     int ret = a;
     if (ret < b) ret = b;
     if (ret < c) ret = c;
