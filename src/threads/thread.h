@@ -103,7 +103,7 @@ struct thread
     struct list child_list;
     struct list_elem i_elem;
     int exit_code;
-    struct file* fd[128];
+    struct file* fd_table[128];
 
     struct thread* parent;
     struct semaphore child_execute_sema;

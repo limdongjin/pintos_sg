@@ -467,7 +467,7 @@ init_thread (struct thread *t, const char *name, int priority)
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
 #ifdef USERPROG
-  for(i = 0; i < 128; i++) t->fd[i] = NULL;
+  for(i = 0; i < 128; i++) t->fd_table[i] = NULL;
   t->parent = running_thread();
     sema_init(&(t->child_execute_sema), 0 );
     t->flag = 0;

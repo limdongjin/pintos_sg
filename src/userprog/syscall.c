@@ -240,7 +240,7 @@ exit(int status) {
     printf("%s: exit(%d)\n", thread_current()->name, status);
 
     i = 3;
-    while(i < 128 && thread_current()->fd[i] != NULL) close(i++);
+    while(i < 128 && thread_current()->fd_table[i] != NULL) close(i++);
 
     for(e = list_begin(&thread_current()->child_list);
         e != list_end(&thread_current()->child_list);
@@ -269,12 +269,12 @@ write(int fd, const void *buffer, unsigned size) {
         goto write_done;
     }
 
-    if(thread_current()->fd[fd]==NULL){
+    if(thread_current()->fd_table[fd] == NULL){
         success = false;
         goto write_done;
     }
 
-     cfp = thread_current()->fd[fd];
+     cfp = thread_current()->fd_table[fd];
      if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(cfp, buffer, size);
 
@@ -334,10 +334,10 @@ open(const char *file UNUSED) {
     if(fp == NULL) goto open_done;
 
     i = 3;
-    while(i < 128 && thread_current()->fd[i] != NULL) i++;
+    while(i < 128 && thread_current()->fd_table[i] != NULL) i++;
     if(i < 128){
         if(strcmp(thread_name(), file) == 0) file_deny_write(fp);
-        thread_current()->fd[i] = fp;
+        thread_current()->fd_table[i] = fp;
         ret = i;
     }
  open_done:
@@ -348,8 +348,8 @@ open(const char *file UNUSED) {
 
 int
 filesize(int fd UNUSED) {
-    if(thread_current()->fd[fd] == NULL) exit(-1);
-    return (int)file_length(thread_current()->fd[fd]);
+    if(thread_current()->fd_table[fd] == NULL) exit(-1);
+    return (int)file_length(thread_current()->fd_table[fd]);
 }
 
 int
@@ -367,12 +367,12 @@ read(int fd, void *buffer, unsigned size) {
         goto read_done;
     }
 
-    if(thread_current()->fd[fd] == NULL){
+    if(thread_current()->fd_table[fd] == NULL){
         success = false;
         goto read_done;
     }
 
-    i = file_read(thread_current()->fd[fd], buffer, size);
+    i = file_read(thread_current()->fd_table[fd], buffer, size);
  read_done:
     lock_release(&file_lock);
     if(!success) exit(-1);
@@ -381,23 +381,23 @@ read(int fd, void *buffer, unsigned size) {
 
 void
 seek(int fd UNUSED, unsigned position UNUSED) {
-    if(thread_current()->fd[fd] == NULL) abnormal_exit();
-    file_seek(thread_current()->fd[fd], position);
+    if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
+    file_seek(thread_current()->fd_table[fd], position);
 }
 
 unsigned
 tell(int fd UNUSED) {
-    if(thread_current()->fd[fd] == NULL) abnormal_exit();
-    return (unsigned )file_tell(thread_current()->fd[fd]);
+    if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
+    return (unsigned )file_tell(thread_current()->fd_table[fd]);
 }
 
 void
 close(int fd UNUSED) {
-    struct file* fp = thread_current()->fd[fd];
+    struct file* fp = thread_current()->fd_table[fd];
 
     if(fp == NULL) abnormal_exit();
     file_close(fp);
-    thread_current()->fd[fd] = NULL;
+    thread_current()->fd_table[fd] = NULL;
 }
 
 /* Project 3 and optionally project 4. */
