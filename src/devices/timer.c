@@ -89,11 +89,8 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  //  int64_t start = timer_ticks ();
   ASSERT (intr_get_level () == INTR_ON);
-  // while (timer_elapsed (start) < ticks)
-  //  thread_yield ();
-    thread_sleep_until(timer_ticks() + ticks);
+  thread_sleep_until(timer_ticks() + ticks);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -169,22 +166,29 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  bool flag = thread_mlfqs || thread_prior_aging;
+    bool flag;
+#if USERPROG
+    flag = thread_mlfqs;
+#else
+    flag = thread_mlfqs || thread_prior_aging;
+#endif
   ticks++;
-  if(flag) update_cur_recent_cpu();
-  thread_wakeup(ticks);
-  if(flag){
-    if(timer_ticks() % TIMER_FREQ == 0){
-      update_load_avg();
-      update_recent_cpu();
-    }
-    if(timer_ticks() %4 == 0)
-        thread_aging();
+  if(!flag){
+      thread_wakeup(ticks);
+      thread_tick();
+      return;
   }
+
+  increase_cur_recent_cpu();
+  thread_wakeup(ticks);
+
+  if(timer_ticks() % TIMER_FREQ == 0){
+    update_load_avg();
+    update_recent_cpu();
+  }
+  if(timer_ticks() % 4 == 0) thread_aging();
+
   thread_tick();
-  //struct thread* cur = thread_current();
-  //if(cur == idle_thread) return;
-  // cur->recent_cpu = 
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

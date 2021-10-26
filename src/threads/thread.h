@@ -159,15 +159,16 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+// prj3 functions
 void thread_sleep_until(int64_t time);
 void thread_wakeup(int64_t current_ticks);
 bool exist_high_p_thread(void);
 
 void sort_ready_list(void);
-int get_ready_list_size(void);
 void update_load_avg(void);
 void update_recent_cpu(void);
-void update_cur_recent_cpu(void);
+void increase_cur_recent_cpu(void);
 void thread_aging(void);
-// bool sleep_list_less_func(struct list_elem *a, struct list_elem *b, void *aux UNUSED);
+
 #endif /* threads/thread.h */

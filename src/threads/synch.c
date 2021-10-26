@@ -130,16 +130,13 @@ sema_up (struct semaphore *sema)
 {
   enum intr_level old_level;
   ASSERT (sema != NULL);
-//    bool flag = false;
   old_level = intr_disable ();
 
   if(!list_empty(&sema->waiters)){
-//      flag = true;
       list_sort(&sema->waiters, waiters_greater_func,NULL);
       thread_unblock(list_entry(list_pop_front(&sema->waiters), struct thread, elem));
   }
   sema->value++;
-//  if(flag && exist_high_p_thread()) thread_yield();
   if(exist_high_p_thread()) thread_yield();
   intr_set_level (old_level);
 }
@@ -221,10 +218,8 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread* cur = thread_current();
   if(thread_mlfqs || lock->holder == NULL) goto DEFAULT; 
-  //if(lock->holder != NULL){
-   cur->donating_lock = lock;
-   priority_donate(cur);
-  //}
+  cur->donating_lock = lock;
+  priority_donate(cur);
 DEFAULT:
   sema_down (&lock->semaphore);
   cur->donating_lock = NULL;
@@ -319,7 +314,7 @@ lock_held_by_current_thread (const struct lock *lock)
 
   return lock->holder == thread_current ();
 }
-
+
 /* One semaphore in a list. */
 struct semaphore_elem 
   {

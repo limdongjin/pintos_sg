@@ -22,9 +22,7 @@
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
 #define THREAD_MAGIC 0xcd6abf4b
-#define N_TO_FP(n) (n*FRACTION)
-#define X_TO_NEAREST_INT(x) ((x > 0) ? ((x + FRACTION / 2)/FRACTION) : ((x - FRACTION/2)/FRACTION) )
-#define TRUNCATE(x) (x/FRACTION)
+
 
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
@@ -95,6 +93,23 @@ static bool sleep_list_less_func(const struct list_elem *a,
 static bool ready_list_greater_func(const struct list_elem *a,
                                     const struct list_elem *b,
                                     void *aux UNUSED);
+
+// BSD scheduler formula
+static int calc_new_priority(int recent_cpu, int nice);
+static int calc_new_recent_cpu(int recent_cpu, int nice, int load_avg);
+
+// fixed point operators
+#define N_TO_FP(n) (n*FRACTION)
+#define X_TO_NEAREST_INT(x) ((x > 0) ? ((x + FRACTION / 2)/FRACTION) : ((x - FRACTION/2)/FRACTION) )
+#define TRUNCATE(x) (x/FRACTION)
+// #define ADD_FP_FP(x, y) (x + y)
+#define ADD_FP_INT(x, n) (x + n*FRACTION)
+// #define SUB_FP_FP(x, y) (x - y)
+// #define SUB_FP_INT(x, n) (x - n*FRACTION)
+#define MUL_FP_FP(x, y) (((int64_t)x)*y / FRACTION)
+#define MUL_FP_INT(x, n) (x*n)
+#define DIV_FP_FP(x, y) (((int64_t)x)*FRACTION / y)
+#define DIV_FP_INT(x, n) (x/n)
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -174,10 +189,24 @@ thread_print_stats(void) {
            idle_ticks, kernel_ticks, user_ticks);
 }
 
-int
-get_ready_list_size(){
-  return list_size(&ready_list);
+static int calc_new_priority(int recent_cpu, int nice){
+    int ret = PRI_MAX - TRUNCATE(DIV_FP_INT(recent_cpu, 4)) - 2*nice;
+    // PRI_MAX - (recent_cpu / 4) - 2*nice;
+
+    if(ret > PRI_MAX) ret = PRI_MAX;
+    if(ret < PRI_MIN) ret = PRI_MIN;
+
+    return ret;
 }
+static int calc_new_recent_cpu(int recent_cpu, int nice, int load_avg){
+   int ret;
+   ret = MUL_FP_INT(load_avg, 2); // load_avg * 2
+   ret = DIV_FP_FP(ret, ADD_FP_INT(ret, 1)); // (load_avg*2) / (load_avg*2 + 1)
+   ret = ADD_FP_INT(MUL_FP_FP(ret, recent_cpu), nice); 
+   
+   return ret;
+}
+
 
 void update_load_avg()
 {
@@ -186,8 +215,8 @@ void update_load_avg()
   ready_threads = N_TO_FP(ready_threads);
 
   load_avg = ((59*load_avg) + ready_threads)/60;
-  // if(load_avg < 0) load_avg = 0;
 }
+
 void update_recent_cpu(){
   struct thread* t;
   struct list_elem* e;
@@ -197,7 +226,7 @@ void update_recent_cpu(){
   {
       t = list_entry(e, struct thread, allelem);
       if(t == idle_thread) continue;
-      t->recent_cpu = ((int64_t)N_TO_FP((int64_t)2*load_avg) / (2*load_avg + N_TO_FP(1)))* TRUNCATE(t->recent_cpu) + N_TO_FP(t->nice);
+      t->recent_cpu = calc_new_recent_cpu(t->recent_cpu, t->nice, load_avg);
   }
 }
 void thread_aging(){
@@ -208,10 +237,7 @@ void thread_aging(){
       e = list_next(e))
   {
     t = list_entry(e, struct thread, allelem);
-    t->priority = (N_TO_FP(PRI_MAX) - ((t->recent_cpu)/4) - (N_TO_FP((t->nice*2))))>>14;
-
-    if(t->priority > PRI_MAX) t->priority = PRI_MAX;
-    if(t->priority < PRI_MIN) t->priority = PRI_MIN;
+    t->priority = calc_new_priority(t->recent_cpu, t->nice);
   }
 }
 
@@ -267,7 +293,9 @@ thread_create(const char *name, int priority,
 
     /* Add to run queue. */
     thread_unblock(t);
-    //
+
+    // prj3
+    // for preemption
     if(exist_high_p_thread())
         thread_yield();
 
@@ -429,13 +457,8 @@ thread_set_nice(int nice) {
     if(thread_current() == idle_thread) return;
 
     struct thread* cur = thread_current();
+    cur->priority = calc_new_priority(cur->recent_cpu, nice);
     cur->nice = nice;
-    int new_priority = TRUNCATE(N_TO_FP(PRI_MAX) - (cur->recent_cpu / 4) - N_TO_FP(nice*2));
-
-    if(new_priority > PRI_MAX) new_priority = PRI_MAX;
-    else if (new_priority < PRI_MIN) new_priority = PRI_MIN;
-
-    cur->priority = new_priority;
     if(exist_high_p_thread()) thread_yield();
 }
 
@@ -458,7 +481,7 @@ thread_get_load_avg(void) {
   return ret;
 }
 void
-update_cur_recent_cpu(){
+increase_cur_recent_cpu(){
   if(thread_current() != idle_thread)
     thread_current()->recent_cpu += N_TO_FP(1);
 }
@@ -513,7 +536,8 @@ sort_ready_list(void)
 
 bool exist_high_p_thread(void){
     if(list_empty(&ready_list)) return false;
-    return thread_current()->priority < list_entry(list_front(&ready_list), struct thread, elem)->priority;
+    return thread_current()->priority
+            < list_entry(list_front(&ready_list), struct thread, elem)->priority;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -586,7 +610,7 @@ is_thread(struct thread *t) {
 static void
 init_thread(struct thread *t, const char *name, int priority) {
     enum intr_level old_level;
-    // int i;
+    int i;
     ASSERT (t != NULL);
     ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
     ASSERT (name != NULL);
