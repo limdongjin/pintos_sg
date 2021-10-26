@@ -108,8 +108,13 @@ struct thread
     struct thread* parent;
     struct semaphore child_execute_sema;
     int flag;
+
 #endif
 
+    int64_t wakeup_ticks;
+    int original_priority;
+    struct list lock_list;
+    struct lock *donating_lock;
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
   };
@@ -149,5 +154,10 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+void thread_sleep_until(int64_t time);
+void thread_wakeup(int64_t current_ticks);
+bool exit_high_p_thread(void);
 
+void sort_ready_list(void);
+// bool sleep_list_less_func(struct list_elem *a, struct list_elem *b, void *aux UNUSED);
 #endif /* threads/thread.h */
