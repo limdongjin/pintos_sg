@@ -5,7 +5,9 @@
 #include <list.h>
 #include <stdint.h>
 #include "synch.h"
-
+#ifndef USERPROG
+extern bool thread_prior_aging;
+#endif
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -24,7 +26,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
-
+#define FRACTION (1<<14)
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -115,6 +117,9 @@ struct thread
     int original_priority;
     struct list lock_list;
     struct lock *donating_lock;
+
+    int nice;
+    int recent_cpu;
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
   };
@@ -156,8 +161,13 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 void thread_sleep_until(int64_t time);
 void thread_wakeup(int64_t current_ticks);
-bool exit_high_p_thread(void);
+bool exist_high_p_thread(void);
 
 void sort_ready_list(void);
+int get_ready_list_size(void);
+void update_load_avg(void);
+void update_recent_cpu(void);
+void update_cur_recent_cpu(void);
+void thread_aging(void);
 // bool sleep_list_less_func(struct list_elem *a, struct list_elem *b, void *aux UNUSED);
 #endif /* threads/thread.h */
