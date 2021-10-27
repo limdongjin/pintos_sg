@@ -163,7 +163,7 @@ int thread_get_load_avg (void);
 // prj3 functions
 void thread_sleep_until(int64_t time);
 void thread_wakeup(int64_t current_ticks);
-bool exist_high_p_thread(void);
+bool exist_high_priority_than_cur(void);
 
 void sort_ready_list(void);
 void update_load_avg(void);

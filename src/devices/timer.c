@@ -89,16 +89,8 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-//int64_t start = timer_ticks ();
   ASSERT (intr_get_level () == INTR_ON);
-// CHANGE
-//#ifndef USERPROG
   thread_sleep_until(timer_ticks() + ticks);
-//#else
-//  while (timer_elapsed (start) < ticks) 
-//    thread_yield ();
-//#endif
-//
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -175,11 +167,6 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
     bool flag = thread_mlfqs;
-//#ifdef USERPROG
-//    flag = thread_mlfqs;
-//#else
-//    flag = thread_mlfqs || thread_prior_aging;
-//#endif
 #ifndef USERPROG
   flag = flag || thread_prior_aging;
 #endif
