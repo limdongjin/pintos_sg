@@ -293,12 +293,14 @@ thread_create(const char *name, int priority,
 
     /* Add to run queue. */
     thread_unblock(t);
-
+// CHANGE
+//#ifndef USERPROG
     // prj3
     // for preemption
     if(exist_high_p_thread())
         thread_yield();
-
+//#endif
+//
     return tid;
 }
 
@@ -340,8 +342,13 @@ thread_unblock(struct thread *t) {
 
     old_level = intr_disable();
     ASSERT (t->status == THREAD_BLOCKED);
+// CHANGE
+//#ifndef USERPROG
     list_insert_ordered(&ready_list, &t->elem, ready_list_greater_func, NULL);
-
+//#else
+//    list_push_back(&ready_list, &t->elem);
+//#endif
+//
     t->status = THREAD_READY;
     intr_set_level(old_level);
 }
@@ -406,9 +413,14 @@ thread_yield(void) {
     ASSERT (!intr_context());
 
     old_level = intr_disable();
+// CHANGE
     if(cur != idle_thread)
+//#ifndef USERPROG
         list_insert_ordered(&ready_list, &cur->elem, ready_list_greater_func, NULL);
-
+//#else 
+//	list_push_back (&ready_list, &cur->elem);
+//#endif
+//
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);

@@ -87,7 +87,12 @@ sema_down (struct semaphore *sema)
   old_level = intr_disable ();
   while (sema->value == 0)
   {
+//CHANGE
+//#ifndef USERPROG
       list_insert_ordered(&sema->waiters, &thread_current()->elem, waiters_greater_func, NULL);
+//#else
+//      list_push_back (&sema->waiters, &thread_current ()->elem);
+//#endif
       thread_block ();
   }
 
@@ -133,11 +138,18 @@ sema_up (struct semaphore *sema)
   old_level = intr_disable ();
 
   if(!list_empty(&sema->waiters)){
+// CHANGE
+// #ifndef USERPROG
       list_sort(&sema->waiters, waiters_greater_func,NULL);
+// #endif
       thread_unblock(list_entry(list_pop_front(&sema->waiters), struct thread, elem));
   }
   sema->value++;
+// CHANGE
+// ifndef 로 안감싸면 userprog test 에서 에러남 
+#ifndef USERPROG
   if(exist_high_p_thread()) thread_yield();
+#endif
   intr_set_level (old_level);
 }
 
