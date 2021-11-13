@@ -111,6 +111,10 @@ static int calc_new_recent_cpu(int recent_cpu, int nice, int load_avg);
 #define DIV_FP_FP(x, y) (((int64_t)x)*FRACTION / y)
 #define DIV_FP_INT(x, n) (x/n)
 
+unsigned thread_get_ticks () {
+    return thread_ticks;
+}
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -127,7 +131,7 @@ static int calc_new_recent_cpu(int recent_cpu, int nice, int load_avg);
 void
 thread_init(void) {
     ASSERT (intr_get_level() == INTR_OFF);
-
+    int i;
     lock_init(&tid_lock);
     list_init(&ready_list);
     list_init(&all_list);
@@ -142,6 +146,11 @@ thread_init(void) {
     initial_thread->tid = allocate_tid();
     initial_thread->nice = 0;
     initial_thread->recent_cpu = 0;
+
+    for(i=0;i<128;i++){
+        initial_thread->mbuffer[i] = NULL;
+        initial_thread->msize[i] = 0;
+    }
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -656,6 +665,7 @@ init_thread(struct thread *t, const char *name, int priority) {
     list_init(&(t->child_list));
     list_push_back(&(running_thread()->child_list), &(t->i_elem));
 #endif
+
     intr_set_level(old_level);
 }
 

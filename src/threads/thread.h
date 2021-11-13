@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 #include "synch.h"
+#include "lib/kernel/hash.h"
 #ifndef USERPROG
 extern bool thread_prior_aging;
 #endif
@@ -122,6 +123,11 @@ struct thread
     int recent_cpu;
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+
+// PRJ4
+    // struct hash ptable; // page table
+    void *mbuffer[130];
+    uint32_t msize[130];
   };
 
 /* If false (default), use round-robin scheduler.
@@ -170,5 +176,7 @@ void update_load_avg(void);
 void update_recent_cpu(void);
 void increase_cur_recent_cpu(void);
 void thread_aging(void);
+
+unsigned thread_get_ticks ();
 
 #endif /* threads/thread.h */

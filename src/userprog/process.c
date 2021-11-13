@@ -18,7 +18,9 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/syscall.h"
-
+// PRJ4
+#include "vm/page.h"
+// #include "vm/frame.h"
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]);
@@ -67,6 +69,9 @@ start_process (void *file_name_)
   char *file_name = file_name_;
   struct intr_frame if_;
   bool success;
+
+  // PRJ4 page table init
+  // ptable_init(&thread_current()->ptable);
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
@@ -135,8 +140,13 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+// PRJ4
+//  ptable_destroy(&thread_current()->ptable);
+//
   pd = cur->pagedir;
-  if (pd != NULL) 
+  page_destroy_by_pid(cur->tid);
+  // PRJ4
+ if (pd != NULL)
     {
       /* Correct ordering here is crucial.  We must set
          cur->pagedir to NULL before switching page directories,
@@ -329,7 +339,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   memcpy(t->name, cmd_argv[0], sizeof(t->name)/sizeof(char));
 
   /* Open executable file. */
+    lock_acquire(&file_lock);
   file = filesys_open (cmd_argv[0]);
+    lock_release(&file_lock);
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", cmd_argv[0]);
@@ -420,8 +432,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
+    lock_acquire(&file_lock);
   file_close (file);
-  free(cmd_cpy);
+    lock_release(&file_lock);
+  free(cmd_cpy); // TODO is free safe?
 
   return success;
 }
@@ -489,71 +503,174 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
 
    Return true if successful, false if a memory allocation error
    or disk read error occurs. */
+//static bool
+//load_segment (struct file *file, off_t ofs, uint8_t *upage,
+//              uint32_t read_bytes, uint32_t zero_bytes, bool writable)
+//{
+//  ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+//  ASSERT (pg_ofs (upage) == 0);
+//  ASSERT (ofs % PGSIZE == 0);
+//// ELF포맷파일의세그먼트를프로세스가상주소공간에탑재하는함수이다.
+////이함수에프로세스가상메모리관련자료구조를초기화하는기능을추가한다.
+////프로세스가상주소공간에메모리를탑재하는부분을제거하고, vm_entry구조체의할당, 필드값초기화, 해시테이블삽입을추가한다.
+//  file_seek (file, ofs);
+//  while (read_bytes > 0 || zero_bytes > 0)
+//    {
+//      /* Calculate how to fill this page.
+//         We will read PAGE_READ_BYTES bytes from FILE
+//         and zero the final PAGE_ZERO_BYTES bytes. */
+//      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+//      size_t page_zero_bytes = PGSIZE - page_read_bytes;
+////PRJ4
+////      struct page *page=(struct page*)malloc(sizeof(struct page));
+////      page->vaddr=pg_round_down(upage);
+////      page->file = file;
+////      page->read_bytes = page_read_bytes;
+////      page->zero_bytes = page_read_bytes;
+////      page->offset = ofs;
+////      page->writable = writable;
+////      if(!insert_page(&thread_current()->ptable, page)){
+////        return false;
+////      }
+//      /* Get a page of memory. */
+//      uint8_t *kpage = palloc_get_page (PAL_USER); // vm_frame_allocate
+//      if (kpage == NULL){
+//          evict_frame();
+//          kpage = palloc_get_page(PAL_USER);
+//      }
+//      if(kpage == NULL) return false;
+//      frame_insert(upage, kpage, writable);
+//      /* Load this page. */
+//      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
+//        {
+//          palloc_free_page (kpage); // cm_frame_free
+//          return false;
+//        }
+//      memset (kpage + page_read_bytes, 0, page_zero_bytes);
+//
+//      /* Add the page to the process's address space. */
+//      if (!install_page (upage, kpage, writable))
+//        {
+//          palloc_free_page (kpage); // vm_frame_free
+//          return false;
+//        }
+//
+//      /* Advance. */
+//      read_bytes -= page_read_bytes;
+//      zero_bytes -= page_zero_bytes;
+//      upage += PGSIZE;
+//    }
+//  return true;
+//}
 static bool
 load_segment (struct file *file, off_t ofs, uint8_t *upage,
-              uint32_t read_bytes, uint32_t zero_bytes, bool writable) 
+              uint32_t read_bytes, uint32_t zero_bytes, bool writable)
 {
-  ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-  ASSERT (pg_ofs (upage) == 0);
-  ASSERT (ofs % PGSIZE == 0);
-
-  file_seek (file, ofs);
-  while (read_bytes > 0 || zero_bytes > 0) 
+    ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+    ASSERT (pg_ofs (upage) == 0);
+    ASSERT (ofs % PGSIZE == 0);
+    file_seek (file, ofs);
+    while (read_bytes > 0 || zero_bytes > 0)
     {
-      /* Calculate how to fill this page.
-         We will read PAGE_READ_BYTES bytes from FILE
-         and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
+        /* Calculate how to fill this page.
+           We will read PAGE_READ_BYTES bytes from FILE
+           and zero the final PAGE_ZERO_BYTES bytes. */
+        size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+        size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-      /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
-      if (kpage == NULL)
-        return false;
+        /* Get a page of memory. */
+        uint8_t *knpage = palloc_get_page (PAL_USER);
 
-      /* Load this page. */
-      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
+        if (knpage == NULL) // 이 경우를 수정해야 함 (swap, lazy loading 구현)
         {
-          palloc_free_page (kpage);
-          return false; 
-        }
-      memset (kpage + page_read_bytes, 0, page_zero_bytes);
-
-      /* Add the page to the process's address space. */
-      if (!install_page (upage, kpage, writable)) 
-        {
-          palloc_free_page (kpage);
-          return false; 
+            if (file_read (file, frame_for_swap, page_read_bytes)
+                != (int) page_read_bytes) {
+                PANIC ("in load_segment, Error occur!");
+            }
+            memset (frame_for_swap + page_read_bytes, 0, page_zero_bytes);
+            page_insert (upage, frame_for_swap, writable);
         }
 
-      /* Advance. */
-      read_bytes -= page_read_bytes;
-      zero_bytes -= page_zero_bytes;
-      upage += PGSIZE;
+        else
+        {
+            /* Load this page. */
+            if (file_read (file, knpage, page_read_bytes) != (int) page_read_bytes)
+            {
+                palloc_free_page (knpage);
+                return false;
+            }
+            memset (knpage + page_read_bytes, 0, page_zero_bytes);
+
+            /* Add the page to the process's address space. */
+            if (!install_page (upage, knpage, writable))
+            {
+                palloc_free_page (knpage);
+                return false;
+            }
+            page_insert (upage, knpage, writable);
+        }
+
+        /* Advance. */
+        read_bytes -= page_read_bytes;
+        zero_bytes -= page_zero_bytes;
+        upage += PGSIZE;
     }
-  return true;
+    return true;
 }
-
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
+//static bool
+//setup_stack (void **esp)
+//{
+//  uint8_t *kpage;
+//  bool success = false;
+//
+//  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+//  if(kpage == NULL){
+//      evict_frame();
+//      kpage= palloc_get_page(PAL_USER|PAL_ZERO);
+//      if(kpage == NULL) return false;
+//  }
+//
+//    success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+//    if (success)
+//        *esp = PHYS_BASE;
+//    else
+//        palloc_free_page (kpage);
+//  return success;
+//}
 static bool
-setup_stack (void **esp) 
+setup_stack (void **esp) // 무조건 성공해야 함 -> eviction 필요
 {
-  uint8_t *kpage;
-  bool success = false;
+    uint8_t *kpage;
+    bool success = false;
 
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  if (kpage != NULL) 
+    kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL)
     {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE;
-      else
-        palloc_free_page (kpage);
+        success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+        if (success) {
+            page_insert (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+            *esp = PHYS_BASE;
+        }
+        else
+            palloc_free_page (kpage);
     }
-  return success;
+    else
+    {
+        page_evict_frame (); // kpage가 frame을 얻을 수 있도록 보장
+        kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	if(kpage == NULL){
+		page_evict_frame();
+            kpage = palloc_get_page(PAL_USER|PAL_ZERO);
+	}
+        ASSERT (kpage != NULL);
+        success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+        page_insert (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+        *esp = PHYS_BASE;
+    }
+    return success;
 }
-
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
    If WRITABLE is true, the user process may modify the page;
@@ -570,6 +687,6 @@ install_page (void *upage, void *kpage, bool writable)
 
   /* Verify that there's not already a page at that virtual
      address, then map our page there. */
-  return (pagedir_get_page (t->pagedir, upage) == NULL
-          && pagedir_set_page (t->pagedir, upage, kpage, writable));
+    return (pagedir_get_page (t->pagedir, upage) == NULL
+               && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }

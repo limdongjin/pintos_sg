@@ -7,6 +7,10 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
+#include "vm/page.h"
+#include "threads/palloc.h"
+#include "vm/swap.h"
+// #include "vm/frame.h"
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
@@ -121,6 +125,8 @@ kill (struct intr_frame *f)
    can find more information about both of these in the
    description of "Interrupt 14--Page Fault Exception (#PF)" in
    [IA32-v3a] section 5.15 "Exception and Interrupt Reference". */
+#define MB (1024 * 1024)
+#define KB 1024
 static void
 page_fault (struct intr_frame *f) 
 {
@@ -149,8 +155,127 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
- if(not_present || !user || !write || is_kernel_vaddr(fault_addr)) abnormal_exit();
+   // if(not_present || !user || !write || is_kernel_vaddr(fault_addr)) abnormal_exit();
+    if(is_kernel_vaddr(fault_addr) || (user && is_kernel_vaddr(f->esp))) {
+        exit(-1);
+    }
 
+    if (fault_addr == NULL) {
+        exit (-1);
+    }
+    struct page_entry *pte = page_get_entry (fault_addr, thread_tid());
+    if (pte != NULL && pte->writable == false && write == true) {// non writable에 write
+        if (lock_held_by_current_thread (&file_lock))
+            lock_release (&file_lock);
+        exit(-1);
+    }
+#define PHYS_BASE 0xc0000000
+    if (not_present == true) {  // valid한 page라면 mapping시켜줌
+        struct thread *t = thread_current();
+        void *kpage;
+        uint32_t *pd = t->pagedir;
+        if (PHYS_BASE - (uint32_t)fault_addr < 8 * MB) { // stack growth
+            struct page_entry *pte = page_get_entry (fault_addr, t->tid);
+            if (write == false) {
+                swap_in ((void *)(pte->vpn << 12), pte->swap_idx);
+                return;
+            }
+            uint32_t upage = ((uint32_t) fault_addr >> 12) << 12;
+            uint32_t pagenum = (PHYS_BASE - (uint32_t)upage) / (4 * KB);
+            int i;
+            for (i = 0; i < pagenum; i++) {
+                pte = page_get_entry (upage, t->tid);
+                if (pte == NULL) {
+                    kpage = NULL;
+                    while (kpage == NULL) {
+                        page_evict_frame();
+                        kpage = palloc_get_page (PAL_USER);
+                    }
+                    memset (kpage, 0, PGSIZE);
+                    page_insert (upage, kpage, true);
+                    pagedir_set_page (pd, upage, kpage, true);
+                }
+                else if (pte->swap_idx != -1)
+                    swap_in (upage, pte->swap_idx);
+                upage += (4 * KB);
+            }
+            return;
+        }else {    // swap in 시켜줌
+            if (page_get_entry ((void *)(pte->vpn << 12), thread_tid()) == NULL) {
+                exit (-1);
+            }
+            swap_in ((void *)(pte->vpn << 12), pte->swap_idx);
+            return;
+        }
+    }
+
+    // 6912 not working
+//    if(!not_present || !is_user_vaddr(fault_addr)||!fault_addr)
+//    {
+//        exit(-1);
+//    }
+    // printf("1\n");
+//    struct page * page_entry=find_page_by_vaddr(&thread_current()->ptable, fault_addr);
+//    bool flag = true;
+//    if(page_entry)
+//    {
+//        //      printf("5\n");
+//        struct frame *frame;
+//        struct thread *cur=thread_current();
+//        frame=frame_insert(page_entry->vaddr, page_entry->paddr, true);
+//        if(frame!=NULL)
+//        {
+//            swap_in(page_entry->vaddr, frame->k_vaddr, page_entry->swap_idx);
+//            page_entry->paddr=frame->k_vaddr;
+//        }
+//        else
+//        {
+//            flag=false;
+//        }
+//
+//    }
+//    else if(fault_addr>=(f->esp -32))
+//    {
+//        void *stack_ptr=PHYS_BASE-PGSIZE;
+//        void *grow_addr=pg_round_down(fault_addr);
+//        int page_num=(stack_ptr-grow_addr+PGSIZE)/PGSIZE;
+//        int i;
+//        if(page_num*PGSIZE<=8*1024*1024)//8MB
+//        {
+//            while(stack_ptr>=pg_round_up(fault_addr)){  // 이미 frame에 mapping 것 빼줌.
+//                if(!is_user_vaddr(stack_ptr))//user가 아니라면
+//                    break;
+//                if(!pagedir_get_page(thread_current()->pagedir, stack_ptr))//mapping이 안되었다면
+//                    break;
+//                page_num = page_num - 1;
+//                stack_ptr = stack_ptr - PGSIZE;
+//
+//            }
+//            grow_addr = pg_round_down(fault_addr);
+//            for(i=0; i<page_num; i++)
+//            {
+//                void *kpage = palloc_get_page(PAL_USER); // frame에>서 공간을 새로 할당받음
+//                if(!kpage) {
+//                    evict_frame();
+//                    kpage=palloc_get_page(PAL_USER);
+//                    //exit(-1);
+//                }
+//                pagedir_set_page(thread_current()->pagedir, grow_addr, kpage, true); //page와 frame을 ㅁmapping
+//                grow_addr = grow_addr + PGSIZE;
+//            }
+//
+//        }
+//        else
+//        {
+//            flag=false;
+//        }
+//    }
+//    else
+//    {
+//
+//
+//        exit(-1);
+//    }
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */

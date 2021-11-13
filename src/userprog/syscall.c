@@ -8,11 +8,15 @@
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
 #include "userprog/pagedir.h"
+#include "threads/palloc.h"
 #include "devices/shutdown.h"
 #include "userprog/process.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
 #include "devices/input.h"
+#include "vm/page.h"
+#include "vm/swap.h"
+
 // #include "lib/user/syscall.h"
 struct file
 {
@@ -36,13 +40,24 @@ syscall_init(void) {
 
 static bool
 check_user_ptr(const void *user_ptr) {
-    if(!is_user_vaddr(user_ptr) ||
-       !user_ptr ||
-       !pagedir_get_page(thread_current()->pagedir, user_ptr))
-    {
-        exit(-1);
+   // if(!is_user_vaddr(user_ptr) ||
+   //    !user_ptr ||
+    //   !pagedir_get_page(thread_current()->pagedir, user_ptr))
+    //{
+//	    printf("check fail1\n");
+ //       exit(-1);
+  //  }
+    if(!is_user_vaddr(user_ptr)){
+	//printf("check faill1\n");
+	exit(-1);
+	return false;
     }
-
+    if (page_get_entry (((uint32_t)user_ptr >> 12) << 12, thread_tid()) == NULL)
+    {
+	   // printf("check fail2\n");
+	    exit(-1);
+	    return false;
+    }
     return true;
 }
 
@@ -100,8 +115,9 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
             SAVE_ARG_AND_VERIFY(3);
             break;
         default:
-            printf("unsupported syscall\n");
-            return false;
+            //printf("unsupported syscall\n");
+            //return false;
+	    break;
     }
 #undef SAVE_ARG_AND_VERIFY
 
@@ -167,12 +183,16 @@ syscall_handler(struct intr_frame *f UNUSED) {
                  UNSIGNED_ARG(1));
             break;
         case SYS_TELL:
+            lock_acquire(&file_lock);
             f->eax = tell(INT_ARG(0));
+            lock_release(&file_lock);
             break;
         case SYS_CLOSE:
             close(INT_ARG(0));
             break;
         case SYS_MMAP:
+            // check_user_ptr(INT_ARG(0));
+            check_user_ptr(VOID_PTR_ARG(1));
             f->eax = mmap(INT_ARG(0),
                           VOID_PTR_ARG(1));
             break;
@@ -240,7 +260,18 @@ exit(int status) {
     printf("%s: exit(%d)\n", thread_current()->name, status);
 
     i = 3;
-    while(i < 128 && thread_current()->fd_table[i] != NULL) close(i++);
+    while(i < 128 && thread_current()->fd_table[i] != NULL) {
+        // close(i++);
+        struct file *f = thread_current()->fd_table[i];
+        if(f != NULL) {
+            if (thread_current()->mbuffer[i] != NULL)
+                munmap(i);
+            //lock_acquire (&file_lock);
+            //file_close(f);
+            close(i++);
+            // lock_release (&file_lock);
+        }
+    }
 
     for(e = list_begin(&thread_current()->child_list);
         e != list_end(&thread_current()->child_list);
@@ -262,7 +293,7 @@ write(int fd, const void *buffer, unsigned size) {
     bool success = true;
 
     lock_acquire(&file_lock);
-
+    page_pinning_buffers(buffer, size);
     if (fd == 1) { // console
         putbuf((char *) buffer, size);
         ret = size;
@@ -276,8 +307,8 @@ write(int fd, const void *buffer, unsigned size) {
 
      cfp = thread_current()->fd_table[fd];
      if(cfp->deny_write) file_deny_write(cfp);
-     ret = file_write(cfp, buffer, size);
-
+     ret = file_write(thread_current()->fd_table[fd], buffer, size);
+   page_unpinning_buffers(buffer, size);
  write_done:
      lock_release(&file_lock);
      if(!success) exit(-1);
@@ -326,13 +357,18 @@ remove(const char *file) {
 
 int
 open(const char *file UNUSED) {
-    if(file == NULL) exit(-1);
+    if(file == NULL) {
+	//printf("file null\n");
+	    exit(-1);
+    }
     int i, ret = -1;
 
     lock_acquire(&file_lock);
     struct file* fp = filesys_open(file);
-    if(fp == NULL) goto open_done;
-
+    if(fp == NULL) {
+	//printf("fp null\n");
+	    goto open_done;
+    }
     i = 3;
     while(i < 128 && thread_current()->fd_table[i] != NULL) i++;
     if(i < 128){
@@ -340,6 +376,7 @@ open(const char *file UNUSED) {
         thread_current()->fd_table[i] = fp;
         ret = i;
     }
+ //   printf("before open done\n");
  open_done:
     lock_release(&file_lock);
 
@@ -371,8 +408,9 @@ read(int fd, void *buffer, unsigned size) {
         success = false;
         goto read_done;
     }
-
+    page_pinning_buffers (buffer, size);
     i = file_read(thread_current()->fd_table[fd], buffer, size);
+    page_unpinning_buffers(buffer, size);
  read_done:
     lock_release(&file_lock);
     if(!success) exit(-1);
@@ -381,34 +419,96 @@ read(int fd, void *buffer, unsigned size) {
 
 void
 seek(int fd UNUSED, unsigned position UNUSED) {
+    if(fd >= 128) exit(-1);
     if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
+    lock_acquire(&file_lock);
     file_seek(thread_current()->fd_table[fd], position);
+    lock_release(&file_lock);
 }
 
 unsigned
 tell(int fd UNUSED) {
+    if(fd >= 128) exit(-1);
     if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
     return (unsigned )file_tell(thread_current()->fd_table[fd]);
 }
 
 void
 close(int fd UNUSED) {
+//    printf("close start\n");
+    if(fd >= 128) exit(-1);
+
     struct file* fp = thread_current()->fd_table[fd];
 
     if(fp == NULL) abnormal_exit();
+    lock_acquire(&file_lock);
     file_close(fp);
+    lock_release(&file_lock);
     thread_current()->fd_table[fd] = NULL;
+//    printf("close end\n");
 }
 
 /* Project 3 and optionally project 4. */
 mapid_t
 mmap(int fd UNUSED, void *addr UNUSED) {
-    return unsupported_func();
+    lock_acquire (&file_lock);
+    struct file *file = file_reopen (thread_current()->fd_table[fd]);
+    ASSERT (file != NULL);
+
+    if ((uint32_t) addr % PGSIZE != 0)
+        return -1;
+
+    size_t read_bytes = file_length (file);
+    size_t zero_bytes = PGSIZE - (read_bytes % PGSIZE);
+    uint8_t *upage = addr;
+
+    thread_current()->msize[fd] = read_bytes;
+
+    file_seek (file, 0);
+
+    while (read_bytes > 0 || zero_bytes > 0) {
+
+        size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+        size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+        uint8_t *knpage = palloc_get_page (PAL_USER);
+        while (knpage == NULL) {
+            page_evict_frame ();
+            knpage = palloc_get_page (PAL_USER);
+        }
+
+        int temp = file_read (file, knpage, page_read_bytes);
+        if (temp != (int) page_read_bytes) {
+            palloc_free_page (knpage);
+            return -1;
+        }
+
+        memset (knpage + page_read_bytes, 0, page_zero_bytes);
+
+        pagedir_set_page (thread_current()->pagedir, upage, knpage, true);
+        page_insert (upage, knpage, true);
+
+        read_bytes -= page_read_bytes;
+        zero_bytes -= page_zero_bytes;
+        upage += PGSIZE;
+    }
+    thread_current()->mbuffer[fd] = addr;
+    lock_release (&file_lock);
+    return fd;
 }
 
 void
-munmap(mapid_t t UNUSED) {
-    unsupported_func();
+munmap(mapid_t t UNUSED) { // t eq mapping
+    int i;
+    int size = filesize(t);
+    void *buffer = thread_current()->mbuffer[t];
+    ASSERT (buffer != NULL);
+    lock_acquire (&file_lock);
+    page_pinning_buffers (buffer, size);
+    file_write (thread_current()->fd_table[t], buffer, size);
+    page_unpinning_buffers(buffer, size);
+    lock_release (&file_lock);
+    return;
 }
 
 /* Project 4 only. */
