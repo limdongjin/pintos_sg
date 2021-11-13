@@ -18,12 +18,14 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/syscall.h"
+#include "vm/frame.h"
+#include "vm/swap.h"
+#include "vm/page.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]);
 static void push_args(int argc, char* argv[CMD_ARGC_LIMIT], void** esp);
-
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -132,9 +134,19 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-
-  /* Destroy the current process's page directory and switch back
-     to the kernel-only page directory. */
+   int i = 3;
+    while(i < 128 && cur->fd_table[i] != NULL){
+	    file_close(cur->fd_table[i]);
+	    cur->fd_table[i] = NULL;
+	    i++;
+    }
+    if(cur->exec_file != NULL){
+        file_close(cur->exec_file);
+        cur->exec_file = NULL;
+    }
+    spt_destroy(&cur->sup_page_tab);
+    /* Destroy the current process's page directory and switch back
+       to the kernel-only page directory. */
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -329,12 +341,17 @@ load (const char *file_name, void (**eip) (void), void **esp)
   memcpy(t->name, cmd_argv[0], sizeof(t->name)/sizeof(char));
 
   /* Open executable file. */
+  // PRJ4 TODO lock safe?
+    lock_acquire(&file_lock);
   file = filesys_open (cmd_argv[0]);
+    lock_release(&file_lock);
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", cmd_argv[0]);
       goto done; 
     }
+  t->exec_file = file;
+  file_deny_write(file);
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
@@ -505,31 +522,46 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
+      ////// PRJ3 TODO refactoring of load_segment////
+      struct page_entry *pge = (struct page_entry *)malloc(sizeof(struct page_entry));
+        if(pge==NULL) return false;
 
-      /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
-      if (kpage == NULL)
-        return false;
+        memset(pge,0,sizeof(struct page_entry));
+        pge->type=VM_BIN;
+        pge->file=file;
+        pge->offset=ofs;
+        pge->read_bytes=page_read_bytes;
+        pge->zero_bytes=page_zero_bytes;
+        pge->writable=writable;
+        pge->vaddr=upage;
 
-      /* Load this page. */
-      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-        {
-          palloc_free_page (kpage);
-          return false; 
-        }
-      memset (kpage + page_read_bytes, 0, page_zero_bytes);
-
-      /* Add the page to the process's address space. */
-      if (!install_page (upage, kpage, writable)) 
-        {
-          palloc_free_page (kpage);
-          return false; 
-        }
+        insert_pge(&thread_current()->sup_page_tab,pge);
+    ///////
+    /* Get a page of memory. */
+//      uint8_t *kpage = palloc_get_page (PAL_USER);
+//      if (kpage == NULL)
+//        return false;
+//
+//      /* Load this page. */
+//      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
+//        {
+//          palloc_free_page (kpage);
+//          return false;
+//        }
+//      memset (kpage + page_read_bytes, 0, page_zero_bytes);
+//
+//      /* Add the page to the process's address space. */
+//      if (!install_page (upage, kpage, writable))
+//        {
+//          palloc_free_page (kpage);
+//          return false;
+//        }
 
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
+      ofs+=PGSIZE;
     }
   return true;
 }
@@ -537,23 +569,41 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp) 
+setup_stack (void **esp)
 {
-  uint8_t *kpage;
-  bool success = false;
+//  uint8_t *kpage;
+///////////// PRJ4 TODO refactoring of setup_stack
+    struct page *kpage;
+    void *upage = ((uint8_t*)PHYS_BASE)-PGSIZE;
 
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  if (kpage != NULL) 
+    struct page_entry *pge=(struct page_entry *)malloc(sizeof(struct page_entry));
+    if(pge==NULL)
+        return false;
+
+    kpage = alloc_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL)
     {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE;
-      else
-        palloc_free_page (kpage);
-    }
-  return success;
-}
+        kpage->pge=pge;
+        add_page_to_list_LRU(kpage);
 
+        if(!install_page(upage,kpage->kaddr,true)){
+            free_page_kaddr(kpage);
+            free(pge);
+            return false;
+        }
+        *esp=PHYS_BASE-12;
+
+        memset(kpage->pge,0,sizeof(struct page_entry));
+        kpage->pge->type=VM_ANON;
+        kpage->pge->vaddr=upage;
+        kpage->pge->writable=true;
+        kpage->pge->is_loaded=true;
+
+
+        insert_pge(&thread_current()->sup_page_tab,kpage->pge);
+    }
+    return true;
+}
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
    If WRITABLE is true, the user process may modify the page;
@@ -572,4 +622,78 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+
+// PRJ4 TODO refact mm_fault, stack_grow
+//
+bool handle_mm_fault(struct page_entry* pge)
+{
+    //	uint8_t *kpage;
+    // step1. allocate physical page
+    struct page *kpage;
+    kpage = alloc_page(PAL_USER);
+
+    ASSERT(kpage!=NULL);
+    ASSERT(pg_ofs(kpage->kaddr)==0);
+    ASSERT(pge!=NULL);
+
+    kpage->pge=pge;
+    // step2, 3. load data,, page table setup
+    switch(pge->type){
+        case VM_BIN:
+            if(!load_file(kpage->kaddr,pge) ||
+               !install_page(pge->vaddr,kpage->kaddr,pge->writable)){
+                free_page_kaddr(kpage);
+                return false;
+            }
+            break;
+        case VM_ANON:
+            swap_in (pge->swap_slot, kpage->kaddr);
+            ASSERT(pg_ofs(kpage->kaddr)==0);
+            if (!install_page (pge->vaddr, kpage->kaddr, pge->writable)){
+                free_page_kaddr(kpage);
+                return false;
+            }
+            break;
+        default:
+            NOT_REACHED();
+    }
+
+    pge->is_loaded=true;
+    add_page_to_list_LRU(kpage);
+    return true;
+}
+
+void
+stack_grow (void *addr)
+{
+    struct page *kpage;
+    void *upage = pg_round_down (addr);
+
+    struct page_entry *pge = (struct page_entry *)malloc(sizeof(struct page_entry));
+    if (pge == NULL)
+        return;
+
+    kpage = alloc_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL)
+    {
+        kpage->pge = pge;
+        add_page_to_list_LRU (kpage);
+
+        if (!install_page (upage, kpage->kaddr, true))
+        {
+            free_page_kaddr (kpage);
+            free (pge);
+            return;
+        }
+
+        memset (kpage->pge, 0, sizeof (struct page_entry));
+        kpage->pge->type = VM_ANON;
+        kpage->pge->vaddr = upage;
+        kpage->pge->writable = true;
+        kpage->pge->is_loaded = true;
+
+        insert_pge (&thread_current ()->sup_page_tab, kpage->pge);
+    }
+
 }

@@ -347,4 +347,4 @@ add_executable(pintos_sg
         src/utils/squish-pty.c
         src/utils/squish-unix.c
         src/vm/Make.vars
-        src/vm/Makefile)
+        src/vm/Makefile src/vm/page.c src/vm/page.h src/vm/swap.c src/vm/swap.h src/vm/frame.c src/vm/frame.h)

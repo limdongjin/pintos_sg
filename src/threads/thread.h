@@ -8,6 +8,7 @@
 #ifndef USERPROG
 extern bool thread_prior_aging;
 #endif
+#include <hash.h>
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -122,6 +123,10 @@ struct thread
     int recent_cpu;
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+
+    // PRJ4 TODO member name refactoring
+    struct hash sup_page_tab; // page_table
+    struct file* exec_file;
   };
 
 /* If false (default), use round-robin scheduler.

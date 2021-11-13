@@ -2,7 +2,8 @@
 #define USERPROG_SYSCALL_H
 
 #include "lib/user/syscall.h"
-
+#include <stdlib.h>
+#include <stdio.h>
 void syscall_init (void);
 
 // SG_PRJ1 TODO_DONE: write prototype of general system calls
@@ -39,7 +40,8 @@ int inumber (int fd);
 // SG_PRJ1 TODO_DONE: write prototype of 2 new system call APIs
 int fibonacci(int n);
 int max_of_four_int(int a, int b, int c, int d);
-
+bool check_user_ptr(const void *user_ptr, void *esp);
+bool is_valid_stack(int32_t addr, int32_t esp);
 struct lock file_lock;
 
 #endif /* userprog/syscall.h */

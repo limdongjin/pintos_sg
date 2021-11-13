@@ -13,6 +13,7 @@
 #include "filesys/filesys.h"
 #include "filesys/file.h"
 #include "devices/input.h"
+#include "vm/page.h"
 // #include "lib/user/syscall.h"
 struct file
 {
@@ -21,8 +22,6 @@ struct file
     bool deny_write;            /* Has file_deny_write() been called? */
 };
 static void syscall_handler(struct intr_frame *);
-
-static bool check_user_ptr(const void *user_ptr);
 
 static bool get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]);
 
@@ -34,16 +33,36 @@ syscall_init(void) {
     lock_init(&file_lock);
 }
 
-static bool
-check_user_ptr(const void *user_ptr) {
-    if(!is_user_vaddr(user_ptr) ||
-       !user_ptr ||
-       !pagedir_get_page(thread_current()->pagedir, user_ptr))
-    {
-        exit(-1);
+// TODO PRJ4 check logic..
+bool
+check_user_ptr(const void *user_ptr, void *esp) {
+    if(user_ptr==NULL){
+        return false;
     }
-
-    return true;
+    else{
+        if(!(is_user_vaddr(user_ptr) && user_ptr>=(void*)0x08048000UL)){
+            return false;
+        }
+        if(!get_pge(user_ptr)){
+            if(!is_valid_stack((int32_t) user_ptr, (int32_t)esp))
+                return false;
+            stack_grow(user_ptr);
+            return true;
+        }
+    }
+//    if(!is_user_vaddr(user_ptr) ||
+//       !user_ptr || user_ptr < (void*)0x08048000UL)
+//    {
+//        exit(-1);
+//        return false;
+//    }
+//    if(!get_pge(user_ptr)){
+//        if(!is_valid_stack((int32_t)user_ptr, (int32_t)esp))
+//            return false;
+//       stack_grow(user_ptr);
+//        return true;
+//    }
+//    return true;
 }
 
 static bool
@@ -51,7 +70,7 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
 // scope : get_arg_and_verify(...){ ... }
 #define SAVE_ARG_AND_VERIFY(IDX)                       \
    ({                                                  \
-    check_user_ptr((void*)((int*)esp+(IDX)+1)); \
+    check_user_ptr((void*)((int*)esp+(IDX)+1), esp); \
 	arg[IDX] = (void*)((int*)esp+(IDX)+1);                \
     })
 
@@ -125,39 +144,44 @@ syscall_handler(struct intr_frame *f UNUSED) {
         abnormal_exit();
         return;
     }
-
+    check_user_ptr((const void*)f->esp, f->esp);
     switch (*(uint32_t *) (f->esp)) {
         case SYS_HALT:
             halt();
         case SYS_EXIT:
+            // check_user_ptr(INT_ARG(0), f->esp);
             exit(INT_ARG(0));
         case SYS_EXEC:
+            check_user_ptr(CHAR_PTR_ARG(0), f->esp);
             f->eax = exec(CHAR_PTR_ARG(0));
             break;
         case SYS_WAIT:
             f->eax = wait(INT_ARG(0));
             break;
         case SYS_CREATE:
+            check_user_ptr(CHAR_PTR_ARG(0), f->esp);
             f->eax = create(CHAR_PTR_ARG(0),
                             UNSIGNED_ARG(1));
             break;
         case SYS_REMOVE:
+            check_user_ptr(CHAR_PTR_ARG(0), f->esp);
             f->eax = remove(CHAR_PTR_ARG(0));
             break;
         case SYS_OPEN:
-            check_user_ptr(CHAR_PTR_ARG(0));
+            check_user_ptr(CHAR_PTR_ARG(0), f->esp);
             f->eax = open(CHAR_PTR_ARG(0));
             break;
         case SYS_FILESIZE:
             f->eax = filesize(INT_ARG(0));
             break;
         case SYS_READ:
+            check_user_ptr(VOID_PTR_ARG(1), f->esp);
             f->eax = read(INT_ARG(0),
                  VOID_PTR_ARG(1),
                  UNSIGNED_ARG(2));
             break;
         case SYS_WRITE:
-             check_user_ptr(VOID_PTR_ARG(1));
+            check_user_ptr(VOID_PTR_ARG(1), f->esp);
             f->eax = write(INT_ARG(0),
                            VOID_PTR_ARG(1),
                            UNSIGNED_ARG(2));
@@ -240,8 +264,13 @@ exit(int status) {
     printf("%s: exit(%d)\n", thread_current()->name, status);
 
     i = 3;
-    while(i < 128 && thread_current()->fd_table[i] != NULL) close(i++);
-
+    while(i < 128 && thread_current()->fd_table[i] != NULL){
+	    close(i++);
+    }
+    if(thread_current()->exec_file != NULL){
+    	file_close(thread_current()->exec_file);
+    	thread_current()->exec_file = NULL;
+    }
     for(e = list_begin(&thread_current()->child_list);
         e != list_end(&thread_current()->child_list);
         e = list_next(e))
@@ -255,9 +284,11 @@ exit(int status) {
 int
 write(int fd, const void *buffer, unsigned size) {
     if(fd == 0 || fd == 2) abnormal_exit();
+    if(fd < 0 || fd >= 128) exit(-1);
+
     struct file* cfp;
 
-    check_user_ptr(buffer);
+    // check_user_ptr(buffer, NULL);
     int ret;
     bool success = true;
 
@@ -311,7 +342,7 @@ wait(pid_t pid) {
 bool
 create(const char *file, unsigned initial_size) {
      if(file == NULL) exit(-1);
-    check_user_ptr(file);
+    // check_user_ptr(file, NULL);
 
     return filesys_create(file, initial_size);
 }
@@ -319,7 +350,7 @@ create(const char *file, unsigned initial_size) {
 bool
 remove(const char *file) {
      if(file == NULL) exit(-1);
-     check_user_ptr(file);
+    // check_user_ptr(file, NULL);
 
     return filesys_remove(file);
 }
@@ -356,10 +387,12 @@ int
 read(int fd, void *buffer, unsigned size) {
     unsigned i = 0;
     bool success = true;
-    check_user_ptr(buffer);
+    if(buffer > PHYS_BASE) exit(-1);
+   // check_user_ptr(buffer, NULL);
     if(fd == 1 || fd == 2) {
         abnormal_exit();
     }
+    if(fd < 0 || fd >= 128) exit(-1);
 
     lock_acquire(&file_lock);
     if (fd == 0) { // console
@@ -457,4 +490,8 @@ max_of_four_int(int a, int b, int c, int d) {
     if (ret < c) ret = c;
     if (ret < d) ret = d;
     return ret;
+}
+
+bool is_valid_stack(int32_t addr, int32_t esp){
+    return is_user_vaddr(addr) && esp-addr<=32 && 0xC0000000UL-addr<=8*1024*1024;
 }

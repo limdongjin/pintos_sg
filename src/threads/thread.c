@@ -301,7 +301,7 @@ thread_create(const char *name, int priority,
     sf = alloc_frame(t, sizeof *sf);
     sf->eip = switch_entry;
     sf->ebp = 0;
-
+    spt_init(&t->sup_page_tab);
     /* Add to run queue. */
     thread_unblock(t);
     if(exist_high_priority_than_cur())
