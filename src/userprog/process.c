@@ -139,9 +139,10 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
-// PRJ4
-  pd = cur->pagedir;
+    // PRJ4
+    pd = cur->pagedir;
     delete_pages_by_(cur->tid);
+    //
  if (pd != NULL)
     {
       /* Correct ordering here is crucial.  We must set
@@ -431,7 +432,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     lock_acquire(&file_lock);
   file_close (file);
     lock_release(&file_lock);
-  free(cmd_cpy); // TODO is free safe?
+  free(cmd_cpy);
 
   return success;
 }
@@ -516,31 +517,28 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
         /* Get a page of memory. */
-        uint8_t *knpage = palloc_get_page (PAL_USER);
-        if (knpage == NULL)
-        {
+        uint8_t *kpage = palloc_get_page (PAL_USER);
+        if (kpage == NULL){
             if (file_read(file,
                           cur_frame,
                           page_read_bytes) == (int) page_read_bytes) {
                 memset (cur_frame + page_read_bytes, 0, page_zero_bytes);
                 insert_page(upage, cur_frame, writable);
-            }else
-                PANIC ("load_segment fail");
-        }
-        else{
+            }else PANIC ("load_segment fail");
+        } else{
             /* Load this page. */
-            if (file_read (file, knpage, page_read_bytes) != (int) page_read_bytes){
-                palloc_free_page (knpage);
+            if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes){
+                palloc_free_page (kpage);
                 return false;
             }
-            memset (knpage + page_read_bytes, 0, page_zero_bytes);
+            memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
             /* Add the page to the process's address space. */
-            if (!install_page (upage, knpage, writable)){
-                palloc_free_page (knpage);
+            if (!install_page (upage, kpage, writable)){
+                palloc_free_page (kpage);
                 return false;
             }
-            insert_page(upage, knpage, writable);
+            insert_page(upage, kpage, writable);
         }
 
         /* Advance. */
@@ -556,28 +554,28 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp)
 {
-    uint8_t *paddr;
+    uint8_t *kpage;
     bool success = false;
 
-    paddr = palloc_get_page (PAL_USER | PAL_ZERO);
-    if (paddr != NULL){
+    kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL){
         success = install_page(((uint8_t *)PHYS_BASE) - PGSIZE,
-                               paddr,
+                               kpage,
                                true);
         if(!success){
-            palloc_free_page(paddr);
+            palloc_free_page(kpage);
             return false;
         }
-        insert_page(((uint8_t *) PHYS_BASE) - PGSIZE, paddr,
+        insert_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage,
                     true);
         *esp = PHYS_BASE;
         return true;
     }
-    while((paddr = palloc_get_page(PAL_USER | PAL_ZERO)) == NULL)
+    while((kpage = palloc_get_page(PAL_USER | PAL_ZERO)) == NULL)
         evict_frame();
-    ASSERT (paddr != NULL);
-    success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, paddr, true);
-    insert_page(((uint8_t *) PHYS_BASE) - PGSIZE, paddr, true);
+    ASSERT (kpage != NULL);
+    success = install_page (((uint8_t *)PHYS_BASE)-PGSIZE, kpage, true);
+    insert_page(((uint8_t *)PHYS_BASE)-PGSIZE, kpage, true);
     *esp = PHYS_BASE;
     return success;
 }

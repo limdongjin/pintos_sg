@@ -7,11 +7,12 @@
 #include "threads/synch.h"
 
 struct page_entry {
-    uint32_t vaddr;   // virtual page number
-    uint32_t paddr;   // physical page number
+    uint32_t vaddr;
+    uint32_t paddr;
+
     uint32_t pid;
     struct thread *t;
-    bool disk;
+
     bool writable;
 
     struct hash_elem elem;

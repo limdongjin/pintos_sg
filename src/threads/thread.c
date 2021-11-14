@@ -147,6 +147,7 @@ thread_init(void) {
     initial_thread->nice = 0;
     initial_thread->recent_cpu = 0;
 
+// PRJ4
     for(i=0;i<128;i++){
         initial_thread->mbuffer[i] = NULL;
         initial_thread->msize[i] = 0;

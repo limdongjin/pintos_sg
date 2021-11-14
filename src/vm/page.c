@@ -136,11 +136,9 @@ make_page_by_(void* va, void* pa, bool writable){
     if(pa == cur_frame) {
         page->paddr = 0;
         page->swap_idx = swap_out (pa);
-        page->disk = true;
     }else{
         page->paddr = calc_page_number(pa);
         page->swap_idx = -1;
-        page->disk = false;
     }
 
     return page;

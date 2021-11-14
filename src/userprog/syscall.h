@@ -5,7 +5,6 @@
 
 void syscall_init (void);
 
-// SG_PRJ1 TODO_DONE: write prototype of general system calls
 #define SYSCALL_MAX_ARGC 10
 #define ABNORMAL_EXIT_CODE (-1)
 
@@ -36,7 +35,6 @@ bool readdir (int fd, char name[READDIR_MAX_LEN + 1]);
 bool isdir (int fd);
 int inumber (int fd);
 
-// SG_PRJ1 TODO_DONE: write prototype of 2 new system call APIs
 int fibonacci(int n);
 int max_of_four_int(int a, int b, int c, int d);
 

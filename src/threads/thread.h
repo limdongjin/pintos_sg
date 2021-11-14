@@ -125,7 +125,6 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. */
 
 // PRJ4
-    // struct hash ptable; // page table
     void *mbuffer[130];
     uint32_t msize[130];
   };
