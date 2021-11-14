@@ -21,7 +21,6 @@ struct page_entry {
 };
 
 struct lock page_lock;
-void *frame_for_swap;
 
 void init_page_table ();
 void insert_page (void *va, void *pa, bool writable);

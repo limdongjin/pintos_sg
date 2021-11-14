@@ -1,5 +1,6 @@
 #include "page.h"
 #include "swap.h"
+#include "vm/frame.h"
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "userprog/pagedir.h"
