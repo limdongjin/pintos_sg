@@ -10,17 +10,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO macro naming
-#define SPP (PGSIZE / BLOCK_SECTOR_SIZE)
-#define SWAP_IDX_SIZE (block_size (swap_block) / SPP)
+#define SWAP_SIZE (block_size (swap_block) / (PGSIZE/BLOCK_SECTOR_SIZE))
+
+/* Definitions of Functions of vm/swap.h */
 
 void swap_init () {
     int i;
     swap_block = block_get_role (BLOCK_SWAP);
     if (swap_block == NULL) PANIC ("swap_init fail");
 
-    is_swapped = malloc (SWAP_IDX_SIZE);
-    memset(is_swapped, false, SWAP_IDX_SIZE);
+    is_swapped = malloc (SWAP_SIZE);
+    memset(is_swapped, false, SWAP_SIZE);
     lock_init (&swap_lock);
 }
 
@@ -33,14 +33,14 @@ uint32_t swap_out (void *frame) {
     lock_acquire (&swap_lock);
 
     for (swap_idx = 0;
-         swap_idx < SWAP_IDX_SIZE && is_swapped[swap_idx];
+         swap_idx < SWAP_SIZE && is_swapped[swap_idx];
          swap_idx++) {}
-    if (swap_idx < SWAP_IDX_SIZE && !is_swapped[swap_idx])
+    if (swap_idx < SWAP_SIZE && !is_swapped[swap_idx])
         is_swapped[swap_idx] = true;
 
-    for (i = 0; i < SPP; i++)
+    for (i = 0; i < (PGSIZE / BLOCK_SECTOR_SIZE); i++)
         block_write (swap_block,
-                     swap_idx * SPP + i,
+                     swap_idx * (PGSIZE / BLOCK_SECTOR_SIZE) + i,
                      frame + i * BLOCK_SECTOR_SIZE);
 
     lock_release (&swap_lock);
@@ -62,10 +62,10 @@ void swap_in (void *va, uint32_t swap_idx) {
 
     lock_acquire (&swap_lock);
 
-    for (i = 0; i < SPP; i++)
+    for (i = 0; i < (PGSIZE / BLOCK_SECTOR_SIZE); i++)
         block_read (swap_block,
-                    swap_idx * SPP + i,
-                    pa + i * BLOCK_SECTOR_SIZE);
+                    i + swap_idx * (PGSIZE / BLOCK_SECTOR_SIZE),
+                    i * BLOCK_SECTOR_SIZE + pa);
 
     pagedir_set_page(thread_current()->pagedir,
                      va, pa, page->writable);

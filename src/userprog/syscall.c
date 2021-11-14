@@ -18,7 +18,6 @@
 #include "vm/swap.h"
 #include "vm/frame.h"
 
-// #include "lib/user/syscall.h"
 struct file
 {
     struct inode *inode;        /* File's inode. */

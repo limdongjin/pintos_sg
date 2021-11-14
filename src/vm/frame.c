@@ -7,17 +7,11 @@
 #include "threads/vaddr.h"
 #include "threads/interrupt.h"
 
-static bool pin_and_swap (void *va, uint32_t pid);
-static bool
-pin_and_swap (void *va, uint32_t pid) {
-    struct page_entry *page = get_page_by_(va, pid);
-    if (page == NULL) return false;
-    page->is_pinned = true;
-    if (page->paddr != 0) return true;
+/* Declarations of Helper Functions */
 
-    swap_in (va, page->swap_idx);
-    return true;
-}
+static bool pin_and_swap (void *va, uint32_t pid);
+
+/* Definitions of Functions of vm/frame.h */
 
 void pinning (void *buffer, unsigned size) {
     uint32_t pid = thread_tid();
@@ -67,5 +61,18 @@ evict_frame(void) {
     pagedir_clear_page (page->t->pagedir, (void*)(page->vaddr << 12));
     palloc_free_page ((void*)(page->paddr << 12));
     page->paddr = 0;
+    return true;
+}
+
+/* Definitions of Helper Functions */
+
+static bool
+pin_and_swap (void *va, uint32_t pid) {
+    struct page_entry *page = get_page_by_(va, pid);
+    if (page == NULL) return false;
+    page->is_pinned = true;
+    if (page->paddr != 0) return true;
+
+    swap_in (va, page->swap_idx);
     return true;
 }
