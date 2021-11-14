@@ -462,68 +462,75 @@ close(int fd UNUSED) {
     lock_release(&file_lock);
 }
 
-// TODO mmap refactoring
 /* Project 3 and optionally project 4. */
+
 mapid_t
 mmap(int fd UNUSED, void *addr UNUSED) {
     lock_acquire (&file_lock);
-    struct file *file = file_reopen (thread_current()->fd_table[fd]);
-    ASSERT (file != NULL);
 
-    if ((uint32_t) addr % PGSIZE != 0)
-        return -1;
+    mapid_t ret = fd;
+    size_t read_bytes, zero_bytes, p_read_bytes, p_zero_bytes;
+    uint8_t *va, *pa;
+    struct file *fp = file_reopen(thread_current()->fd_table[fd]);
 
-    size_t read_bytes = file_length (file);
-    size_t zero_bytes = PGSIZE - (read_bytes % PGSIZE);
-    uint8_t *upage = addr;
+    ASSERT (fp != NULL);
+
+    if ((uint32_t) addr % PGSIZE != 0) return -1;
+
+    read_bytes = file_length (fp);
+    zero_bytes = PGSIZE - (read_bytes % PGSIZE);
+    va = addr;
 
     thread_current()->msize[fd] = read_bytes;
 
-    file_seek (file, 0);
+    file_seek (fp, 0);
 
     while (read_bytes > 0 || zero_bytes > 0) {
+        if(read_bytes < PGSIZE) p_read_bytes = read_bytes;
+        else p_read_bytes = PGSIZE;
+        p_zero_bytes = PGSIZE - p_read_bytes;
 
-        size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-        size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
-        uint8_t *knpage = palloc_get_page (PAL_USER);
-        while (knpage == NULL) {
+        while ((pa = palloc_get_page(PAL_USER)) == NULL)
             evict_frame();
-            knpage = palloc_get_page (PAL_USER);
+
+        if (file_read (fp, pa, p_read_bytes) != (int) p_read_bytes) {
+            palloc_free_page (pa);
+            ret = -1;
+            goto DONE;
         }
 
-        int temp = file_read (file, knpage, page_read_bytes);
-        if (temp != (int) page_read_bytes) {
-            palloc_free_page (knpage);
-            return -1;
-        }
+        memset (pa + p_read_bytes, 0, p_zero_bytes);
+        pagedir_set_page(thread_current()->pagedir,
+                         va,
+                         pa,
+                         true);
+        insert_page(va, pa, true);
 
-        memset (knpage + page_read_bytes, 0, page_zero_bytes);
-
-        pagedir_set_page (thread_current()->pagedir, upage, knpage, true);
-        insert_page(upage, knpage, true);
-
-        read_bytes -= page_read_bytes;
-        zero_bytes -= page_zero_bytes;
-        upage += PGSIZE;
+        read_bytes -= p_read_bytes;
+        zero_bytes -= p_zero_bytes;
+        va += PGSIZE;
     }
     thread_current()->mbuffer[fd] = addr;
+DONE:
     lock_release (&file_lock);
-    return fd;
+    return ret;
 }
 
 void
-munmap(mapid_t t UNUSED) { // t eq mapping
-    int i;
-    int size = filesize(t);
+munmap(mapid_t t UNUSED) {
+    if(t < 0) exit(-1);
+
     void *buffer = thread_current()->mbuffer[t];
     ASSERT (buffer != NULL);
+    int size = filesize(t);
+
     lock_acquire (&file_lock);
     pinning(buffer, size);
+
     file_write (thread_current()->fd_table[t], buffer, size);
+
     unpinning(buffer, size);
     lock_release (&file_lock);
-    return;
 }
 
 /* Project 4 only. */
