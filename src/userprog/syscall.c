@@ -16,6 +16,7 @@
 #include "devices/input.h"
 #include "vm/page.h"
 #include "vm/swap.h"
+#include "vm/frame.h"
 
 // #include "lib/user/syscall.h"
 struct file
@@ -275,7 +276,7 @@ write(int fd, const void *buffer, unsigned size) {
     bool success = true;
 
     lock_acquire(&file_lock);
-    pinning_buffers(buffer, size);
+    pinning(buffer, size);
     if (fd == 1) { // console
         putbuf((char *) buffer, size);
         ret = size;
@@ -290,7 +291,7 @@ write(int fd, const void *buffer, unsigned size) {
      cfp = thread_current()->fd_table[fd];
      if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(thread_current()->fd_table[fd], buffer, size);
-    unpinning_buffers(buffer, size);
+    unpinning(buffer, size);
   write_done:
      lock_release(&file_lock);
      if(!success) exit(-1);
@@ -409,9 +410,9 @@ read(int fd, void *buffer, unsigned size) {
         success = false;
         goto read_done;
     }
-    pinning_buffers(buffer, size);
+    pinning(buffer, size);
     i = file_read(thread_current()->fd_table[fd], buffer, size);
-    unpinning_buffers(buffer, size);
+    unpinning(buffer, size);
  read_done:
     lock_release(&file_lock);
     if(!success) exit(-1);
@@ -519,9 +520,9 @@ munmap(mapid_t t UNUSED) { // t eq mapping
     void *buffer = thread_current()->mbuffer[t];
     ASSERT (buffer != NULL);
     lock_acquire (&file_lock);
-    pinning_buffers(buffer, size);
+    pinning(buffer, size);
     file_write (thread_current()->fd_table[t], buffer, size);
-    unpinning_buffers(buffer, size);
+    unpinning(buffer, size);
     lock_release (&file_lock);
     return;
 }

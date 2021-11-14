@@ -30,8 +30,6 @@ bool delete_page (void *va, uint32_t pid);
 bool delete_pages_by_ (uint32_t pid);
 bool page_evict_frame ();
 void page_set_swap (void *va, void *pa, uint32_t pid);
-void pinning_buffers (void *buffer, unsigned size);
-void unpinning_buffers (void *buffer, unsigned size);
 uint32_t calc_page_number (void *);
 struct page_entry *get_page_by_ (void *va, uint32_t pid);
 

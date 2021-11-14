@@ -10,7 +10,6 @@
 struct hash page_table;
 
 static uint32_t calc_page_idx (const struct page_entry *page);
-static bool pinning_and_swapin (void *va, uint32_t pid);
 static struct hash_elem *get_hash_elem (void *va, uint32_t pid);
 static bool page_less_func (const struct hash_elem *a,
                             const struct hash_elem *b, void *aux);
@@ -64,8 +63,7 @@ get_hash_elem (void *va, uint32_t pid) {
     return hash_find(&page_table, &page.elem);
 }
 
-static struct page_entry*
-make_page_by_(void* va, void* pa, bool writable);
+static struct page_entry* make_page_by_(void* va, void* pa, bool writable);
 static struct page_entry*
 make_page_by_(void* va, void* pa, bool writable){
             struct page_entry* page;
@@ -180,39 +178,4 @@ static uint32_t
 calc_page_idx (const struct page_entry *page) {
     ASSERT (page->pid < 0x1000);
     return ((uint32_t)(page->vaddr) << 12) + page->pid;
-}
-
-static bool
-pinning_and_swapin (void *va, uint32_t pid) {
-    struct page_entry *page = get_page_by_(va, pid);
-   // lock_acquire (&swap_lock);
-   // lock_release (&swap_lock);
-    if (page == NULL) return false;
-    page->is_pinned = true;
-    if (page->paddr != 0) return true;
-
-    swap_in (va, page->swap_idx);
-    return true;
-}
-
-void pinning_buffers (void *buffer, unsigned size) {
-    uint32_t pid = thread_tid();
-    uint32_t buf = ((uint32_t) buffer >>12)<<12;
-    int siz = size + (uint32_t)buffer-buf;
-
-    for(;siz > 0;buf+=PGSIZE,siz-=PGSIZE)
-        pinning_and_swapin((void*)buf, pid);
-}
-
-void unpinning_buffers (void *buffer, unsigned size) {
-    struct page_entry* page;
-    uint32_t buf = ((uint32_t)buffer>>12)<< 12;
-    int siz = size + (uint32_t) buffer -buf;
-    uint32_t pid = thread_tid();
-
-    for(;siz>0;buf+=PGSIZE,siz-=PGSIZE){
-        page = get_page_by_(buf, pid);
-        ASSERT(page != NULL);
-        page->is_pinned = false;
-    }
 }
