@@ -40,7 +40,7 @@ calc_page_number (void* addr) {
 void
 init_page_table () {
     hash_init (&page_table, &page_hash_func, &page_less_func, NULL);
-    frame_for_swap = palloc_get_page (PAL_USER);
+    cur_frame = palloc_get_page (PAL_USER);
     lock_init (&page_lock);
 }
 
@@ -93,7 +93,7 @@ delete_pages_by_ (uint32_t pid) {
 }
 
 void
-page_set_swap (void *va, void *pa, uint32_t pid) {
+set_page_for_swap_in (void *va, void *pa, uint32_t pid) {
     ASSERT (get_hash_elem (va, pid) != NULL);
     struct page_entry *page = hash_entry(get_hash_elem(va, pid),
                                     struct page_entry,
@@ -133,7 +133,7 @@ make_page_by_(void* va, void* pa, bool writable){
     page->elem.list_elem.next = NULL;
     page->elem.list_elem.prev = NULL;
     page->t = thread_current();
-    if(pa == frame_for_swap) {
+    if(pa == cur_frame) {
         page->paddr = 0;
         page->swap_idx = swap_out (pa);
         page->disk = true;

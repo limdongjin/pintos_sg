@@ -24,6 +24,7 @@ void swap_init () {
     lock_init (&swap_lock);
 }
 
+// frame -> disk
 uint32_t swap_out (void *frame) {
     int i;
     uint32_t swap_idx;
@@ -46,6 +47,7 @@ uint32_t swap_out (void *frame) {
     return swap_idx;
 }
 
+// disk -> frame
 void swap_in (void *va, uint32_t swap_idx) {
     void* pa;
     struct page_entry *page;
@@ -67,7 +69,7 @@ void swap_in (void *va, uint32_t swap_idx) {
 
     pagedir_set_page(thread_current()->pagedir,
                      va, pa, page->writable);
-    page_set_swap(va, pa, thread_tid());
+    set_page_for_swap_in(va, pa, thread_tid());
     is_swapped[swap_idx] = false;
 
     lock_release (&swap_lock);

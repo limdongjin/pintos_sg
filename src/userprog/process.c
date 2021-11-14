@@ -520,10 +520,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         if (knpage == NULL)
         {
             if (file_read(file,
-                  frame_for_swap,
-                  page_read_bytes) == (int) page_read_bytes) {
-                memset (frame_for_swap + page_read_bytes, 0, page_zero_bytes);
-                insert_page(upage, frame_for_swap, writable);
+                          cur_frame,
+                          page_read_bytes) == (int) page_read_bytes) {
+                memset (cur_frame + page_read_bytes, 0, page_zero_bytes);
+                insert_page(upage, cur_frame, writable);
             }else
                 PANIC ("load_segment fail");
         }

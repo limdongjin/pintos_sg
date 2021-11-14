@@ -7,7 +7,6 @@
 #include "threads/vaddr.h"
 #include "threads/interrupt.h"
 
-
 static bool pin_and_swap (void *va, uint32_t pid);
 static bool
 pin_and_swap (void *va, uint32_t pid) {
@@ -41,6 +40,7 @@ void unpinning (void *buffer, unsigned size) {
         page->is_pinned = false;
     }
 }
+
 bool
 evict_frame(void) {
     struct hash_iterator it;

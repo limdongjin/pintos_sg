@@ -25,7 +25,7 @@ struct lock page_lock;
 void init_page_table ();
 void insert_page (void *va, void *pa, bool writable);
 bool delete_pages_by_ (uint32_t pid);
-void page_set_swap (void *va, void *pa, uint32_t pid);
+void set_page_for_swap_in (void *va, void *pa, uint32_t pid);
 uint32_t calc_page_number (void *);
 struct page_entry *get_page_by_ (void *va, uint32_t pid);
 struct hash* get_page_table(void);
