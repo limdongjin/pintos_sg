@@ -72,9 +72,6 @@ start_process (void *file_name_)
   struct intr_frame if_;
   bool success;
 
-  // PRJ4 page table init
-  // ptable_init(&thread_current()->ptable);
-
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;

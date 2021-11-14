@@ -291,7 +291,7 @@ write(int fd, const void *buffer, unsigned size) {
      if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(thread_current()->fd_table[fd], buffer, size);
     unpinning_buffers(buffer, size);
- write_done:
+  write_done:
      lock_release(&file_lock);
      if(!success) exit(-1);
 
@@ -303,17 +303,24 @@ exec(const char *cmd_line) {
     char file_name[130];
     struct file *fp;
     int i = 0;
+    pid_t ret;
 
     while(cmd_line[i] != ' ' && (file_name[i] = cmd_line[i]) != '\0') i++;
     file_name[i] = '\0';
 
+    lock_acquire(&file_lock);
     fp = filesys_open(file_name);
+    lock_release(&file_lock);
 
     if (fp == NULL) return ABNORMAL_EXIT_CODE;
 
+    lock_acquire(&file_lock);
     file_close(fp);
+    lock_release(&file_lock);
 
-    return process_execute(cmd_line);
+    ret = process_execute(cmd_line);
+
+    return ret;
 }
 
 int
@@ -326,7 +333,11 @@ create(const char *file, unsigned initial_size) {
      if(file == NULL) exit(-1);
     check_user_ptr(file);
 
-    return filesys_create(file, initial_size);
+    lock_acquire(&file_lock);
+    bool ret = filesys_create(file, initial_size);
+    lock_release(&file_lock);
+
+    return ret;
 }
 
 bool
@@ -334,7 +345,11 @@ remove(const char *file) {
      if(file == NULL) exit(-1);
      check_user_ptr(file);
 
-    return filesys_remove(file);
+    lock_acquire(&file_lock);
+    bool ret = filesys_remove(file);
+    lock_release(&file_lock);
+
+    return ret;
 }
 
 int
@@ -364,8 +379,15 @@ open(const char *file UNUSED) {
 
 int
 filesize(int fd UNUSED) {
-    if(thread_current()->fd_table[fd] == NULL) exit(-1);
-    return (int)file_length(thread_current()->fd_table[fd]);
+    lock_acquire(&file_lock);
+    if(thread_current()->fd_table[fd] == NULL) {
+        lock_release(&file_lock);
+        exit(-1);
+    }
+    int ret = (int) file_length(thread_current()->fd_table[fd]);
+    lock_release(&file_lock);
+
+    return ret;
 }
 
 int
@@ -399,8 +421,13 @@ read(int fd, void *buffer, unsigned size) {
 void
 seek(int fd UNUSED, unsigned position UNUSED) {
     if(fd >= 128) exit(-1);
-    if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
+
     lock_acquire(&file_lock);
+    if(thread_current()->fd_table[fd] == NULL) {
+        lock_release(&file_lock);
+        abnormal_exit();
+    }
+
     file_seek(thread_current()->fd_table[fd], position);
     lock_release(&file_lock);
 }
@@ -408,21 +435,31 @@ seek(int fd UNUSED, unsigned position UNUSED) {
 unsigned
 tell(int fd UNUSED) {
     if(fd >= 128) exit(-1);
-    if(thread_current()->fd_table[fd] == NULL) abnormal_exit();
-    return (unsigned )file_tell(thread_current()->fd_table[fd]);
+    lock_acquire(&file_lock);
+    if(thread_current()->fd_table[fd] == NULL) {
+        lock_release(&file_lock);
+        exit(-1);
+    }
+    unsigned ret = (unsigned ) file_tell(thread_current()->fd_table[fd]);
+    lock_release(&file_lock);
+    return ret;
 }
 
 void
 close(int fd UNUSED) {
     if(fd >= 128) exit(-1);
 
+    lock_acquire(&file_lock);
     struct file* fp = thread_current()->fd_table[fd];
 
-    if(fp == NULL) abnormal_exit();
-     lock_acquire(&file_lock);
+    if(fp == NULL) {
+        lock_release(&file_lock);
+        abnormal_exit();
+    }
+
     file_close(fp);
-     lock_release(&file_lock);
     thread_current()->fd_table[fd] = NULL;
+    lock_release(&file_lock);
 }
 
 // TODO mmap refactoring
