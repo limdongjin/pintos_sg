@@ -128,7 +128,7 @@ main (void)
   filesys_init (format_filesys);
 #endif
 #ifdef VM
-    page_table_init ();
+    init_page_table();
 //  frame_table_init ();
     swap_init ();
 #endif

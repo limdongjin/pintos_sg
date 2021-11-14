@@ -40,23 +40,10 @@ syscall_init(void) {
 
 static bool
 check_user_ptr(const void *user_ptr) {
-   // if(!is_user_vaddr(user_ptr) ||
-   //    !user_ptr ||
-    //   !pagedir_get_page(thread_current()->pagedir, user_ptr))
-    //{
-//	    printf("check fail1\n");
- //       exit(-1);
-  //  }
-    if(!is_user_vaddr(user_ptr)){
-	//printf("check faill1\n");
-	exit(-1);
-	return false;
-    }
-    if (page_get_entry (((uint32_t)user_ptr >> 12) << 12, thread_tid()) == NULL)
+    if(!is_user_vaddr(user_ptr) ||
+      get_page_by_(((uint32_t) user_ptr >> 12) << 12, thread_tid()) == NULL)
     {
-	   // printf("check fail2\n");
 	    exit(-1);
-	    return false;
     }
     return true;
 }
@@ -191,7 +178,6 @@ syscall_handler(struct intr_frame *f UNUSED) {
             close(INT_ARG(0));
             break;
         case SYS_MMAP:
-            // check_user_ptr(INT_ARG(0));
             check_user_ptr(VOID_PTR_ARG(1));
             f->eax = mmap(INT_ARG(0),
                           VOID_PTR_ARG(1));
@@ -261,15 +247,11 @@ exit(int status) {
 
     i = 3;
     while(i < 128 && thread_current()->fd_table[i] != NULL) {
-        // close(i++);
         struct file *f = thread_current()->fd_table[i];
         if(f != NULL) {
             if (thread_current()->mbuffer[i] != NULL)
                 munmap(i);
-            //lock_acquire (&file_lock);
-            //file_close(f);
             close(i++);
-            // lock_release (&file_lock);
         }
     }
 
@@ -293,7 +275,7 @@ write(int fd, const void *buffer, unsigned size) {
     bool success = true;
 
     lock_acquire(&file_lock);
-    page_pinning_buffers(buffer, size);
+    pinning_buffers(buffer, size);
     if (fd == 1) { // console
         putbuf((char *) buffer, size);
         ret = size;
@@ -308,7 +290,7 @@ write(int fd, const void *buffer, unsigned size) {
      cfp = thread_current()->fd_table[fd];
      if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(thread_current()->fd_table[fd], buffer, size);
-   page_unpinning_buffers(buffer, size);
+    unpinning_buffers(buffer, size);
  write_done:
      lock_release(&file_lock);
      if(!success) exit(-1);
@@ -358,7 +340,6 @@ remove(const char *file) {
 int
 open(const char *file UNUSED) {
     if(file == NULL) {
-	//printf("file null\n");
 	    exit(-1);
     }
     int i, ret = -1;
@@ -366,7 +347,6 @@ open(const char *file UNUSED) {
     lock_acquire(&file_lock);
     struct file* fp = filesys_open(file);
     if(fp == NULL) {
-	//printf("fp null\n");
 	    goto open_done;
     }
     i = 3;
@@ -376,7 +356,6 @@ open(const char *file UNUSED) {
         thread_current()->fd_table[i] = fp;
         ret = i;
     }
- //   printf("before open done\n");
  open_done:
     lock_release(&file_lock);
 
@@ -408,9 +387,9 @@ read(int fd, void *buffer, unsigned size) {
         success = false;
         goto read_done;
     }
-    page_pinning_buffers (buffer, size);
+    pinning_buffers(buffer, size);
     i = file_read(thread_current()->fd_table[fd], buffer, size);
-    page_unpinning_buffers(buffer, size);
+    unpinning_buffers(buffer, size);
  read_done:
     lock_release(&file_lock);
     if(!success) exit(-1);
@@ -435,19 +414,18 @@ tell(int fd UNUSED) {
 
 void
 close(int fd UNUSED) {
-//    printf("close start\n");
     if(fd >= 128) exit(-1);
 
     struct file* fp = thread_current()->fd_table[fd];
 
     if(fp == NULL) abnormal_exit();
-    lock_acquire(&file_lock);
+     lock_acquire(&file_lock);
     file_close(fp);
-    lock_release(&file_lock);
+     lock_release(&file_lock);
     thread_current()->fd_table[fd] = NULL;
-//    printf("close end\n");
 }
 
+// TODO mmap refactoring
 /* Project 3 and optionally project 4. */
 mapid_t
 mmap(int fd UNUSED, void *addr UNUSED) {
@@ -486,7 +464,7 @@ mmap(int fd UNUSED, void *addr UNUSED) {
         memset (knpage + page_read_bytes, 0, page_zero_bytes);
 
         pagedir_set_page (thread_current()->pagedir, upage, knpage, true);
-        page_insert (upage, knpage, true);
+        insert_page(upage, knpage, true);
 
         read_bytes -= page_read_bytes;
         zero_bytes -= page_zero_bytes;
@@ -504,9 +482,9 @@ munmap(mapid_t t UNUSED) { // t eq mapping
     void *buffer = thread_current()->mbuffer[t];
     ASSERT (buffer != NULL);
     lock_acquire (&file_lock);
-    page_pinning_buffers (buffer, size);
+    pinning_buffers(buffer, size);
     file_write (thread_current()->fd_table[t], buffer, size);
-    page_unpinning_buffers(buffer, size);
+    unpinning_buffers(buffer, size);
     lock_release (&file_lock);
     return;
 }
