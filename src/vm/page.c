@@ -26,6 +26,11 @@ page_less_func (const struct hash_elem *a,
 
 /* Definitions of Functions of vm/page.h */
 
+struct hash*
+get_page_table(void){
+    return &page_table;
+}
+
 uint32_t
 calc_page_number (void* addr) {
     return ((uint32_t)addr& 0xfffff000)>> 12;
@@ -64,22 +69,6 @@ insert_page (void *va, void *pa, bool writable) {
 }
 
 bool
-delete_page (void *va, uint32_t pid) {
-    lock_acquire (&page_lock);
-    struct hash_elem *target = get_hash_elem (va, pid);
-    lock_release (&page_lock);
-
-    if(target == NULL) return false;
-
-    lock_acquire (&page_lock);
-    hash_delete (&page_table, target);
-    lock_release (&page_lock);
-
-    free (hash_entry (target, struct page_entry, elem));
-    return true;
-}
-
-bool
 delete_pages_by_ (uint32_t pid) {
     lock_acquire (&page_lock);
     struct page_entry* page;
@@ -99,35 +88,6 @@ delete_pages_by_ (uint32_t pid) {
         free (hash_entry (he, struct page_entry, elem));
     }
     lock_release (&page_lock);
-    return true;
-}
-
-bool
-page_evict_frame () {
-    struct hash_iterator it;
-    struct page_entry *page = NULL;
-
-    bool flag = false;
-    while(!flag){
-        hash_first(&it, &page_table);
-        while(hash_next(&it)){
-            page = hash_entry (hash_cur (&it), struct page_entry, elem);
-            if (page->is_pinned == false &&
-                page->paddr != 0 &&
-                thread_get_ticks() % 3 != 0) {
-                flag = true;
-                break;
-            }
-        }
-   }
-    if(!flag) {
-        PANIC("evict fail");
-        return false;
-    }
-    page->swap_idx = swap_out(page->paddr << 12);
-    pagedir_clear_page (page->t->pagedir, (void*)(page->vaddr << 12));
-    palloc_free_page ((void*)(page->paddr << 12));
-    page->paddr = 0;
     return true;
 }
 

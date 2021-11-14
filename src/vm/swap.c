@@ -1,4 +1,5 @@
 #include "swap.h"
+#include "vm/frame.h"
 #include "threads/vaddr.h"
 #include "threads/synch.h"
 #include "userprog/pagedir.h"

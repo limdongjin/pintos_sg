@@ -10,6 +10,7 @@
 #include "vm/page.h"
 #include "threads/palloc.h"
 #include "vm/swap.h"
+#include "vm/frame.h"
 // #include "vm/frame.h"
 /* Number of page faults processed. */
 static long long page_fault_cnt;

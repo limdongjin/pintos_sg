@@ -20,7 +20,7 @@
 #include "userprog/syscall.h"
 // PRJ4
 #include "vm/page.h"
-// #include "vm/frame.h"
+#include "vm/frame.h"
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]);

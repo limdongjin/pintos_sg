@@ -41,3 +41,31 @@ void unpinning (void *buffer, unsigned size) {
         page->is_pinned = false;
     }
 }
+bool
+page_evict_frame(void) {
+    struct hash_iterator it;
+    struct page_entry *page = NULL;
+
+    bool flag = false;
+    while(!flag){
+        hash_first(&it, get_page_table());
+        while(hash_next(&it)){
+            page = hash_entry (hash_cur (&it), struct page_entry, elem);
+            if (page->is_pinned == false &&
+                page->paddr != 0 &&
+                thread_get_ticks() % 3 != 0) {
+                flag = true;
+                break;
+            }
+        }
+    }
+    if(!flag) {
+        PANIC("evict fail");
+        return false;
+    }
+    page->swap_idx = swap_out(page->paddr << 12);
+    pagedir_clear_page (page->t->pagedir, (void*)(page->vaddr << 12));
+    palloc_free_page ((void*)(page->paddr << 12));
+    page->paddr = 0;
+    return true;
+}
