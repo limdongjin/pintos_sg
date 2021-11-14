@@ -489,7 +489,7 @@ mmap(int fd UNUSED, void *addr UNUSED) {
 
         uint8_t *knpage = palloc_get_page (PAL_USER);
         while (knpage == NULL) {
-            page_evict_frame ();
+            evict_frame();
             knpage = palloc_get_page (PAL_USER);
         }
 

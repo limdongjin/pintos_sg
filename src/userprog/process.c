@@ -574,7 +574,7 @@ setup_stack (void **esp)
         return true;
     }
     while((paddr = palloc_get_page(PAL_USER | PAL_ZERO)) == NULL)
-        page_evict_frame();
+        evict_frame();
     ASSERT (paddr != NULL);
     success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, paddr, true);
     insert_page(((uint8_t *) PHYS_BASE) - PGSIZE, paddr, true);

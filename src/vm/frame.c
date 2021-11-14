@@ -42,7 +42,7 @@ void unpinning (void *buffer, unsigned size) {
     }
 }
 bool
-page_evict_frame(void) {
+evict_frame(void) {
     struct hash_iterator it;
     struct page_entry *page = NULL;
 

@@ -53,7 +53,7 @@ void swap_in (void *va, uint32_t swap_idx) {
 
     ASSERT (is_user_vaddr (va));
     while ((pa = palloc_get_page(PAL_USER)) == NULL)
-        page_evict_frame ();
+        evict_frame();
 
     page = get_page_by_(va, thread_tid());
     ASSERT (page != NULL && pa != NULL);

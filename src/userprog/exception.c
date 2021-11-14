@@ -201,7 +201,7 @@ page_fault (struct intr_frame *f)
         page = get_page_by_(va, t->tid);
         if (page == NULL) {
             while ((pa= palloc_get_page(PAL_USER)) == NULL) {
-                page_evict_frame();
+                evict_frame();
             }
             memset (pa, 0, PGSIZE);
             insert_page(va, pa, true);
