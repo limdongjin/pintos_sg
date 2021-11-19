@@ -295,6 +295,7 @@ write(int fd, const void *buffer, unsigned size) {
      ret = file_write(thread_current()->fd_table[fd], buffer, size);
     unpinning(buffer, size);
   write_done:
+     unpinning(buffer, size);
      lock_release(&file_lock);
      if(!success) {
 	    #ifdef DEBUG
@@ -302,6 +303,10 @@ write(int fd, const void *buffer, unsigned size) {
 #endif
 	     exit(-1);
      }
+	    #ifdef DEBUG
+	printf("write success end\n");
+#endif
+
      return ret;
 }
 
