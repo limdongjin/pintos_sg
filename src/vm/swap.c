@@ -49,6 +49,11 @@ uint32_t swap_out (void *frame) {
 
 // disk -> frame
 void swap_in (void *va, uint32_t swap_idx) {
+    #ifdef DEBUG
+  printf("swap_in start\n");
+#endif
+
+
     void* pa;
     struct page_entry *page;
     int i;
@@ -56,21 +61,50 @@ void swap_in (void *va, uint32_t swap_idx) {
     ASSERT (is_user_vaddr (va));
     while ((pa = palloc_get_page(PAL_USER)) == NULL)
         evict_frame();
+    #ifdef DEBUG
+  printf("swap_in ing1. after evict clear.\n");
+#endif
+
 
     page = get_page_by_(va, thread_tid());
+    #ifdef DEBUG
+  printf("swap_in ing2. after get_page \n");
+#endif
+
+
     ASSERT (page != NULL && pa != NULL);
 
     lock_acquire (&swap_lock);
 
-    for (i = 0; i < (PGSIZE / BLOCK_SECTOR_SIZE); i++)
-        block_read (swap_block,
+    for (i = 0; i < (PGSIZE / BLOCK_SECTOR_SIZE); i++){
+   #ifdef DEBUG
+  printf("swap_in ing3. before block read\n");
+#endif
+
+
+    	    block_read (swap_block,
                     i + swap_idx * (PGSIZE / BLOCK_SECTOR_SIZE),
                     i * BLOCK_SECTOR_SIZE + pa);
-
+ 
+    }
+   #ifdef DEBUG
+  printf("swap_in ing4\n");
+#endif
     pagedir_set_page(thread_current()->pagedir,
                      va, pa, page->writable);
+   #ifdef DEBUG
+  printf("swap_in ing5.\n");
+#endif
     set_page_for_swap_in(va, pa, thread_tid());
+   #ifdef DEBUG
+  printf("swap_in ing6\n");
+#endif
+
+
     is_swapped[swap_idx] = false;
+    #ifdef DEBUG
+  printf("swap_in success end\n");
+#endif
 
     lock_release (&swap_lock);
 }
