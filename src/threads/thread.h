@@ -110,9 +110,12 @@ struct thread
     struct thread* parent;
     struct semaphore child_execute_sema;
     int flag;
-
+    uint8_t *current_esp;
 #endif
-
+#ifdef VM
+   struct supplemental_page_table *supt;  /* Supplemental Page Table*/
+   struct list mmap_list;                 /* List of mmap descriptors*/
+#endif
     int64_t wakeup_ticks;
     int original_priority;
     struct list lock_list;

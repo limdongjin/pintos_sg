@@ -12,7 +12,7 @@ static long long page_fault_cnt;
 
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
-
+#define MAX_STACK_SIZE 0x800000
 /* Registers handlers for interrupts that can be caused by user
    programs.
 
@@ -149,8 +149,48 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
- if(not_present || !user || !write || is_kernel_vaddr(fault_addr)) abnormal_exit();
 
+ //////////////////////////////////////////////////////////
+  #ifdef VM
+  /* Virtual memory handling.
+   * First, bring in the page to which fault_addr refers. */
+  struct thread *curr = thread_current(); /* Current thread. */
+  void* fault_page = (void*) pg_round_down(fault_addr);
+  //printf("vm1\n");
+  if (!not_present) {
+    // attempt to write to a read-only region is always killed.
+    goto PAGE_FAULT_VIOLATED_ACCESS;
+  }
+
+  void* esp = user ? f->esp : curr->current_esp;
+  // Stack Growth
+  bool is_user_stack, avaialbe_push;
+  is_user_stack = (PHYS_BASE - MAX_STACK_SIZE <= fault_addr && fault_addr < PHYS_BASE);
+  //printf("vm2\n");
+  avaialbe_push = (esp <= fault_addr || fault_addr == f->esp - 4 || fault_addr == f->esp - 32);
+  if (is_user_stack && avaialbe_push) {
+    // we need to add new page entry in the SUPT, if there was no page entry in the SUPT.
+    // A promising choice is assign a new zero-page.
+    //printf("vm3\n");
+    if (vm_supt_has_entry(curr->supt, fault_page) == false)
+      expand_stack(curr->supt, fault_page);
+  }
+  if(! handle_mm_fault(curr->supt, curr->pagedir, fault_page) ) {
+    //printf("vm4\n");
+    goto PAGE_FAULT_VIOLATED_ACCESS;
+  }
+  // success
+  return;
+PAGE_FAULT_VIOLATED_ACCESS:
+#endif
+  //printf("vm5\n");
+  if(!user) { // kernel mode
+    //printf("vm6\n");
+    f->eip = (void *) f->eax;
+    f->eax = 0xffffffff;
+    return;
+  }
+//////////////////////////////////////////////////////////
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
@@ -159,6 +199,8 @@ page_fault (struct intr_frame *f)
           not_present ? "not present" : "rights violation",
           write ? "writing" : "reading",
           user ? "user" : "kernel");
-  kill (f);
+  //kill (f);
+  exit(-1);
+
 }
 

@@ -26,8 +26,8 @@ int open (const char *file);
 int filesize (int fd);
 
 /* Project 3 and optionally project 4. */
-mapid_t mmap (int fd, void *addr);
-void munmap (mapid_t);
+mapid_t sys_mmap (int fd, void *addr);
+bool sys_munmap (mapid_t);
 
 /* Project 4 only. */
 bool chdir (const char *dir);

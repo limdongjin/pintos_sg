@@ -37,7 +37,10 @@
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
 #endif
-
+#ifdef VM
+#include "vm/swap.h"
+#include "vm/frame.h"
+#endif
 /* Page directory with kernel mappings only. */
 uint32_t *init_page_dir;
 
@@ -98,7 +101,9 @@ main (void)
   palloc_init (user_page_limit);
   malloc_init ();
   paging_init ();
-
+#ifdef VM
+  vm_frame_init();
+#endif
   /* Segmentation. */
 #ifdef USERPROG
   tss_init ();
@@ -126,7 +131,9 @@ main (void)
   locate_block_devices ();
   filesys_init (format_filesys);
 #endif
-
+#ifdef VM
+  vm_swap_init();
+#endif
   printf ("Boot complete.\n");
   
   /* Run actions specified on kernel command line. */

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "lib/kernel/hash.h"
 #include "lib/kernel/list.h"
-
+#include "vm/swap.h"
 #include "vm/frame.h"
 #include "threads/thread.h"
 #include "threads/malloc.h"
