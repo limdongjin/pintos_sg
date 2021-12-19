@@ -9,6 +9,14 @@
 #include "filesys/directory.h"
 #include "filesys/buffer-cache.h"
 
+#ifndef DEBUG_PRINT3
+#ifdef DEBUG3
+#define DEBUG_PRINT3(fmt, args...) printf("DEBUG: %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args)
+#else
+#define DEBUG_PRINT3(fmt, args...) /* Don't do anything in release builds */
+#endif
+#endif
+
 /* Partition that contains the file system. */
 struct block *fs_device;
 
@@ -44,7 +52,7 @@ filesys_done (void)
   free_map_close ();
   bc_term();
 }
-
+
 /* Creates a file named NAME with the given INITIAL_SIZE.
    Returns true if successful, false otherwise.
    Fails if a file named NAME already exists,
@@ -52,6 +60,8 @@ filesys_done (void)
 bool
 filesys_create (const char *name, off_t initial_size) 
 {
+    DEBUG_PRINT3("START name = %s\n", name);
+
     // name == path ( ex, /usr/bin/hello.txt )
     // real_name == real name (ex, hello.txt )
   block_sector_t inode_sector = 0;
@@ -65,10 +75,12 @@ filesys_create (const char *name, off_t initial_size)
                   && inode_create (inode_sector, initial_size, 0)
                   && dir_add (dir, real_name, inode_sector));
 
-  if (!success && inode_sector != 0) 
-    free_map_release (inode_sector, 1);
+  if (!success && inode_sector != 0) {
+      DEBUG_PRINT3("FAIL\n");
+      free_map_release(inode_sector, 1);
+  }
   dir_close (dir);
-
+    DEBUG_PRINT3("END real_name = %s\n", real_name);
   return success;
 }
 
@@ -80,16 +92,18 @@ filesys_create (const char *name, off_t initial_size)
 struct file *
 filesys_open (const char *name)
 {
+    DEBUG_PRINT3("START name = %s\n", name);
     char real_name[PATH_MAX_LEN + 1];
     struct dir *dir = parse_path (name, real_name);
   // struct dir *dir = dir_open_root ();
-  if(dir == NULL)
+  if(dir == NULL) {
+      DEBUG_PRINT3("FAIL : dir == NULL\n");
       return NULL;
-
+  }
   struct inode *inode = NULL;
   dir_lookup (dir, real_name, &inode);
   dir_close (dir);
-
+    DEBUG_PRINT3("END : before file_open() , real_name = %s\n", real_name);
   return file_open (inode);
 }
 
@@ -140,14 +154,18 @@ do_format (void)
 struct dir *
 parse_path (const char *path_o, char *file_name)
 {
+    DEBUG_PRINT3("START\n");
     struct dir *dir = NULL;
 
     // 기본 예외 처리
-    if (!path_o || !file_name)
+    if (!path_o || !file_name) {
+        DEBUG_PRINT3("FAIL : path_o or file_name is NULL");
         return NULL;
-    if (strlen (path_o) == 0)
+    }
+    if (strlen (path_o) == 0) {
+        DEBUG_PRINT3("FAIL : path_o length is zero\n");
         return NULL;
-
+    }
     char path[PATH_MAX_LEN + 1];
     strlcpy (path, path_o, PATH_MAX_LEN);
 
@@ -157,15 +175,17 @@ parse_path (const char *path_o, char *file_name)
         dir = dir_reopen (thread_current ()->working_dir);
 
     // 아이노드가 어떤 이유로 제거되었거나 디렉터리가 아닌 경우
-    if (!inode_is_dir (dir_get_inode (dir)))
+    if (!inode_is_dir (dir_get_inode (dir))) {
+        DEBUG_PRINT3("FAIL : inode_is_dir fail : removed or not directory\n");
         return NULL;
-
+    }
     char *token, *next_token, *save_ptr;
     token = strtok_r (path, "/", &save_ptr);
     next_token = strtok_r (NULL, "/", &save_ptr);
 
     if (token == NULL)
     {
+        DEBUG_PRINT3("END : dir = . \n");
         strlcpy (file_name, ".", PATH_MAX_LEN);
         return dir;
     }
@@ -190,12 +210,14 @@ parse_path (const char *path_o, char *file_name)
         next_token = strtok_r (NULL, "/", &save_ptr);
     }
     strlcpy (file_name, token, PATH_MAX_LEN);
+    DEBUG_PRINT3("END\n");
     return dir;
 }
 
 bool
 filesys_create_dir (const char *path)
 {
+    DEBUG_PRINT3("START\n");
     block_sector_t inode_sector = 0;
     char name[PATH_MAX_LEN + 1];
     struct dir *dir = parse_path (path, name);
@@ -213,7 +235,9 @@ filesys_create_dir (const char *path)
         dir_add (new_dir, ".", inode_sector);
         dir_add (new_dir, "..", inode_get_inumber (dir_get_inode (dir)));
         dir_close (new_dir);
+        DEBUG_PRINT3("SUCCESS : path = %s\n", path);
     }
     dir_close (dir);
+    DEBUG_PRINT3("END\n");
     return success;
 }

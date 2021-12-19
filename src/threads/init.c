@@ -22,8 +22,9 @@
 #include "threads/palloc.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
-#include "vm/page.h"
+// #include "vm/page.h"
 #include "vm/swap.h"
+#include "vm/frame.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #include "userprog/exception.h"
@@ -115,6 +116,8 @@ main (void)
   exception_init ();
   syscall_init ();
 #endif
+    swap_init (8 * 1024);
+    lru_list_init ();
 
   /* Start thread scheduler and enable interrupts. */
   thread_start ();
@@ -127,13 +130,6 @@ main (void)
   locate_block_devices ();
   filesys_init (format_filesys);
 #endif
-#ifdef VM
-  // PRJ4
-    init_page_table();
-    swap_init ();
-  //
-#endif
-
   printf ("Boot complete.\n");
   
   /* Run actions specified on kernel command line. */

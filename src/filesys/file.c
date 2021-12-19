@@ -4,6 +4,14 @@
 #include "threads/malloc.h"
 // #include "vm/frame.h"
 #include "filesys/inode.h"
+
+#ifndef DEBUG_PRINT4
+#ifdef DEBUG4
+#define DEBUG_PRINT4(fmt, args...) printf("DEBUG: %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args)
+#else
+#define DEBUG_PRINT4(fmt, args...) /* Don't do anything in release builds */
+#endif
+#endif
 /* An open file. */
 struct file 
   {
@@ -18,6 +26,7 @@ struct file
 struct file *
 file_open (struct inode *inode) 
 {
+    DEBUG_PRINT4("START\n");
   struct file *file = NULL;
   //while((file = calloc (1, sizeof *file)) == NULL)
 	//evict_frame();
@@ -27,10 +36,12 @@ file_open (struct inode *inode)
       file->inode = inode;
       file->pos = 0;
       file->deny_write = false;
+        DEBUG_PRINT4("END\n");
       return file;
     }
   else
     {
+        DEBUG_PRINT4("FAIL : inode == NULL or file == NULL");
       inode_close (inode);
       free (file);
       return NULL; 
@@ -72,8 +83,10 @@ file_get_inode (struct file *file)
 off_t
 file_read (struct file *file, void *buffer, off_t size) 
 {
+    DEBUG_PRINT4("START\n");
   off_t bytes_read = inode_read_at (file->inode, buffer, size, file->pos);
   file->pos += bytes_read;
+    DEBUG_PRINT4("END\n");
   return bytes_read;
 }
 
@@ -98,11 +111,14 @@ file_read_at (struct file *file, void *buffer, off_t size, off_t file_ofs)
 off_t
 file_write (struct file *file, const void *buffer, off_t size) 
 {
-  if(inode_is_dir(file->inode))
+    DEBUG_PRINT4("START\n");
+  if(inode_is_dir(file->inode)) {
+      DEBUG_PRINT4("FAIL : inode is dir\n");
       return -1;
-
+  }
   off_t bytes_written = inode_write_at (file->inode, buffer, size, file->pos);
   file->pos += bytes_written;
+    DEBUG_PRINT4("END\n");
   return bytes_written;
 }
 

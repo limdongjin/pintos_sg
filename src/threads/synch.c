@@ -137,9 +137,10 @@ sema_up (struct semaphore *sema)
       thread_unblock(list_entry(list_pop_front(&sema->waiters), struct thread, elem));
   }
   sema->value++;
-#ifndef USERPROG
-  if(exist_high_priority_than_cur()) thread_yield();
-#endif
+//#ifndef USERPROG
+//  if(exist_high_priority_than_cur()) thread_yield();
+//#endif
+   thread_preempt();
   intr_set_level (old_level);
 }
 
@@ -215,20 +216,47 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
+    enum intr_level old_level;
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread* cur = thread_current();
-  if(thread_mlfqs || lock->holder == NULL) goto DEFAULT; 
+    old_level = intr_disable();
+    if (thread_mlfqs == false)
+    {
+        // 대기해야 하는지 미리 검사합니다.
+        if (lock_try_acquire (lock))
+        {
+            intr_set_level(old_level);
+            return;
+        }
+
+        // 실행 흐름이 여기에 도달하였다면 락을 얻기 위해 대기해야 합니다.
+        // 이 스레드의 대기 원인이 되는 락입니다.
+        cur->wait_on_lock = lock;
+
+        // 그 락을 잡고 있는 스레드의 목록에 이 스레드를 삽입합니다.
+        list_push_back (&lock->holder->donations, &cur->donation_elem);
+        // 우선순위 기부를 수행합니다.
+        donate_priority (cur);
+
+    }
+    sema_down (&lock->semaphore);
+
+    cur->wait_on_lock = NULL;
+    lock->holder = thread_current ();
+    intr_set_level(old_level);
+  /*
+  if(thread_mlfqs || lock->holder == NULL) goto DEFAULT;
   cur->donating_lock = lock;
   priority_donate(cur);
 DEFAULT:
   sema_down (&lock->semaphore);
   cur->donating_lock = NULL;
   if(!thread_mlfqs) list_push_back(&cur->lock_list, &lock->elem);
-  lock->holder = cur;
+  lock->holder = cur;*/
 }
-
+/*
 void
 priority_donate (struct thread* cur)
 {
@@ -243,7 +271,7 @@ priority_donate (struct thread* cur)
   }
   if(flag) sort_ready_list();
 }
-
+*/
 
 /* Tries to acquires LOCK and returns true if successful or false
    on failure.  The lock must not already be held by the current
@@ -255,13 +283,16 @@ bool
 lock_try_acquire (struct lock *lock)
 {
   bool success;
+    enum intr_level old_level;
 
+    old_level = intr_disable();
   ASSERT (lock != NULL);
   ASSERT (!lock_held_by_current_thread (lock));
 
   success = sema_try_down (&lock->semaphore);
   if (success)
     lock->holder = thread_current ();
+    intr_set_level(old_level);
   return success;
 }
 
@@ -273,17 +304,29 @@ lock_try_acquire (struct lock *lock)
 void
 lock_release (struct lock *lock) 
 {
-  ASSERT (lock != NULL);
+    enum intr_level old_level;
+
+    ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
-  if(thread_mlfqs) goto DEFAULT;
+  if(!thread_mlfqs){
+      // 현재 스레드가 잡았던 락으로 인하여 대기하고 있던 모든 스레드를
+      // 이 스레드의 우선순위 기부 목록에서 제거합니다.
+      remove_with_lock (thread_current (), lock);
 
-  list_remove(&lock->elem);
-  priority_update(thread_current());
+      // 우선순위 기부를 받았다면 기부를 취소할 수 있도록 하는 동작입니다.
+      thread_current ()->priority = thread_current ()->base_priority;
+      refresh_priority (thread_current (), &thread_current ()->priority);
+  }
+  //if(thread_mlfqs) goto DEFAULT;
 
-DEFAULT:
-  sema_up (&lock->semaphore);
+  //list_remove(&lock->elem);
+  //priority_update(thread_current());
+    sema_up (&lock->semaphore);
+    intr_set_level(old_level);
+//DEFAULT:
+  //sema_up (&lock->semaphore);
 }
 
 void
@@ -378,15 +421,36 @@ cond_wait (struct condition *cond, struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
   
   sema_init (&waiter.semaphore, 0);
+    list_push_back(&cond->waiters, &waiter.elem);
+    lock_release(lock);
 
-  waiter.semaphore.priority = thread_current()->priority;
-  list_insert_ordered(&cond->waiters, &waiter.elem, semaphore_greater_func, NULL); 
+  //waiter.semaphore.priority = thread_current()->priority;
+  //list_insert_ordered(&cond->waiters, &waiter.elem, semaphore_greater_func, NULL);
 
-  lock_release (lock);
+  //lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);
 }
+// 조건 변수의 대기 목록을 우선순위로 정렬할 수 있게 하는 비교 기능을 제공합니다.
+// list_sort 계열 함수에 사용할 수 있습니다.
+static bool
+cond_waiters_compare (const struct list_elem *a,
+                      const struct list_elem *b, void *aux UNUSED)
+{
+    struct semaphore_elem *sa, *sb;
+    struct thread *ta, *tb;
 
+    sa = list_entry (a, struct semaphore_elem, elem);
+    sb = list_entry (b, struct semaphore_elem, elem);
+
+    ASSERT (!list_empty(&sa->semaphore.waiters));
+    ASSERT (!list_empty(&sb->semaphore.waiters));
+
+    ta = list_entry (list_front (&sa->semaphore.waiters), struct thread, elem);
+    tb = list_entry (list_front (&sb->semaphore.waiters), struct thread, elem);
+
+    return thread_compare_priority (ta, tb);
+}
 /* If any threads are waiting on COND (protected by LOCK), then
    this function signals one of them to wake up from its wait.
    LOCK must be held before calling this function.
@@ -402,9 +466,11 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
   ASSERT (!intr_context ());
   ASSERT (lock_held_by_current_thread (lock));
 
-  if (!list_empty (&cond->waiters)) 
-    sema_up (&list_entry (list_pop_front (&cond->waiters),
-                          struct semaphore_elem, elem)->semaphore);
+  if (!list_empty (&cond->waiters)) {
+      list_sort (&cond->waiters, cond_waiters_compare, 0);
+      sema_up(&list_entry (list_pop_front(&cond->waiters),
+                           struct semaphore_elem, elem)->semaphore);
+  }
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by

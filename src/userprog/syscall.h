@@ -38,6 +38,6 @@ int inumber (int fd);
 int fibonacci(int n);
 int max_of_four_int(int a, int b, int c, int d);
 
-struct lock file_lock;
+// struct lock file_lock;
 
 #endif /* userprog/syscall.h */

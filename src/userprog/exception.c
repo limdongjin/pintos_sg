@@ -1,17 +1,32 @@
 #include "userprog/exception.h"
 #include <inttypes.h>
 #include <stdio.h>
+
 #include "userprog/syscall.h"
 #include "userprog/gdt.h"
+#include "userprog/process.h"
+
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+
 #include "userprog/pagedir.h"
+
 #include "vm/page.h"
 #include "threads/palloc.h"
 #include "vm/swap.h"
 #include "vm/frame.h"
 // #include "vm/frame.h"
+
+
+#ifndef DEBUG_PRINT2
+#ifdef DEBUG2
+#define DEBUG_PRINT2(fmt, args...) printf("DEBUG: %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args)
+#else
+#define DEBUG_PRINT2(fmt, args...) /* Don't do anything in release builds */
+#endif
+#endif
+
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
@@ -129,6 +144,7 @@ kill (struct intr_frame *f)
 static void
 page_fault (struct intr_frame *f) 
 {
+    DEBUG_PRINT2("START : PAGE_FAULT!!!! \n");
   bool not_present;  /* True: not-present page, false: writing r/o page. */
   bool write;        /* True: access was write, false: access was read. */
   bool user;         /* True: access by user, false: access by kernel. */
@@ -160,7 +176,20 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
-
+    struct vm_entry *vme;
+    if (!not_present)
+        exit (-1);
+    vme = find_vme (fault_addr);
+    if (!vme)
+    {
+        if (!verify_stack ((int32_t) fault_addr, f->esp))
+            exit (-1);
+        expand_stack (fault_addr);
+        return;
+    }
+    if (!handle_mm_fault (vme))
+        exit (-1);
+/*
   if(is_kernel_vaddr(fault_addr) ||
      (user && is_kernel_vaddr(f->esp)) ||
      fault_addr == NULL) {
@@ -212,13 +241,19 @@ page_fault (struct intr_frame *f)
             swap_in (va, page->swap_idx);
     }
     
-    ////
+ */
 //    printf ("Page fault at %p: %s error %s page in %s context.\n",
 //          fault_addr,
 //          not_present ? "not present" : "rights violation",
 //          write ? "writing" : "reading",
 //          user ? "user" : "kernel");
 //    kill (f);
-    return;
+    //return;
 }
 
+bool
+verify_stack (int32_t addr, int32_t esp)
+{
+    return is_user_vaddr (addr) && esp - addr <= 32
+           && 0xC0000000UL - addr <= 8 * 1024 * 1024;
+}

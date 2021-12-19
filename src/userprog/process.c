@@ -7,9 +7,11 @@
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
+
 #include "filesys/directory.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
+
 #include "threads/flags.h"
 #include "threads/init.h"
 #include "threads/interrupt.h"
@@ -17,10 +19,20 @@
 #include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
-#include "userprog/syscall.h"
+// #include "userprog/syscall.h"
 // PRJ4
 #include "vm/page.h"
 #include "vm/frame.h"
+#include "vm/swap.h"
+
+//#ifndef DEBUG_PRINT
+//#ifdef DEBUG
+//#define DEBUG_PRINT(fmt, args...) printf("DEBUG: %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args)
+//#else
+//#define DEBUG_PRINT(fmt, args...) /* Don't do anything in release builds */
+//#endif
+//#endif
+
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]);
@@ -35,6 +47,7 @@ struct lock lock_for_execute;
 tid_t
 process_execute (const char *file_name) 
 {
+    // DEBUG_PRINT("START %d\n", file_name);
   char *fn_copy;
   tid_t tid;
   struct list_elem* e = NULL;
@@ -47,19 +60,21 @@ process_execute (const char *file_name)
   strlcpy (fn_copy, file_name, PGSIZE);
 
   /* Create a new thread to execute FILE_NAME. */
+    // DEBUG_PRINT("call thread_create(...)\n", file_name);
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  sema_down(&thread_current()->child_execute_sema);
+    // DEBUG_PRINT("end thread_create(...)\n");
+  ///// sema_down(&thread_current()->child_execute_sema);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy);
-
+/*
   for(e = list_begin(&thread_current()->child_list);
       e != list_end(&thread_current()->child_list);
       e = list_next(e)
   ){
       if(list_entry(e, struct thread, i_elem)->flag == 1)
           return process_wait(tid);
-  }
-
+  }*/
+    // DEBUG_PRINT("END : tid = %d\n", tid);
   return tid;
 }
 
@@ -69,30 +84,44 @@ static void
 start_process (void *file_name_)
 {
   char *file_name = file_name_;
+
+  // DEBUG_PRINT("START %d\n", file_name);
   struct intr_frame if_;
   bool success;
+  struct thread* t;
+  t = thread_current();
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  t->load_succeeded = load (file_name, &if_.eip, &if_.esp);
+
+    // 부모 프로세스에서 exec 함수 수행을 재개해도 좋습니다.
+    sema_up(&t->load_sema);
 
   /* If load failed, quit. */
-  palloc_free_page (file_name);
-
-  sema_up(&thread_current()->parent->child_execute_sema);
-  if (!success) {
-      thread_current()->flag = 1;
-      exit(-1);
+  if(!t->load_succeeded){
+      palloc_free_page(file_name);
+      thread_exit();
   }
+
+  // palloc_free_page (file_name);
+
+  // sema_up(&thread_current()->parent->child_execute_sema);
+  //if (!success) {
+  //    thread_current()->flag = 1;
+  //    exit(-1);
+ // }
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
+    palloc_free_page(file_name);
+
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
   NOT_REACHED ();
 }
@@ -109,6 +138,25 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+    struct thread *child;
+    int exit_status;
+
+    // tid가 잘못되었거나 wait를 두 번 이상 반복하는 경우
+    // 리스트에서 찾을 수 없고 결과적으로 -1을 반환합니다.
+    if (!(child = thread_get_child(child_tid)))
+        return -1;
+
+    // 자식 프로세스가 종료되기를 기다립니다.
+    sema_down (&child->wait_sema);
+    // 자식 프로세스를 이 프로세스의 자식 리스트에서 제거합니다.
+    list_remove (&child->child_elem);
+    // 자식 프로세스의 종료 상태를 얻습니다.
+    exit_status = child->exit_code;
+    // 자식 프로세스를 완전히 제거해도 좋습니다.
+    sema_up (&child->destroy_sema);
+
+    return exit_status;
+    /*
   struct list_elem* el;
   struct list_elem* end_el;
   struct thread* t;
@@ -127,37 +175,85 @@ process_wait (tid_t child_tid UNUSED)
   list_remove(&(t->i_elem));
   sema_up(&(t->i_sema));
   
-  return ret;
+  return ret;*/
 }
 
 /* Free the current process's resources. */
 void
 process_exit (void)
 {
+
+    struct thread *cur = thread_current ();
+    uint32_t *pd;
+
+    // 이 프로세스가 사용한 파일을 정리합니다.
+    for (cur->next_fd--; cur->next_fd >= 2; cur->next_fd--)
+        // 이미 닫힌 경우에도 안전합니다.
+        file_close (cur->fd_table[cur->next_fd]);
+
+    int mapid;
+    for (mapid = 1; mapid < cur->next_mapid; mapid++)
+    {
+        struct mmap_file *mmap_file = find_mmap_file (mapid);
+        if (mmap_file)
+            do_mummap (mmap_file);
+    }
+
+    // 파일 디스크립터 테이블을 해제합니다.
+    cur->fd_table += 2;
+    palloc_free_page (cur->fd_table);
+
+    // 이 프로세스의 프로그램 파일에 대한 쓰기를 허용합니다.
+    // 파일을 닫는 과정에서 쓰기 금지 해제가 이루어집니다.
+    file_close (cur->run_file);
+
+    vm_destroy (&cur->vm);
+
+    // 작업 디렉터리를 닫습니다. NULL인 경우에도 안전합니다.
+    dir_close (cur->working_dir);
+
+    /* Destroy the current process's page directory and switch back
+       to the kernel-only page directory. */
+    pd = cur->pagedir;
+    if (pd != NULL)
+    {
+        /* Correct ordering here is crucial.  We must set
+           cur->pagedir to NULL before switching page directories,
+           so that a timer interrupt can't switch back to the
+           process page directory.  We must activate the base page
+           directory before destroying the process's page
+           directory, or our active page directory will be one
+           that's been freed (and cleared). */
+        cur->pagedir = NULL;
+        pagedir_activate (NULL);
+        pagedir_destroy (pd);
+    }
+    /*
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
-  /* Destroy the current process's page directory and switch back
-     to the kernel-only page directory. */
+  *//* Destroy the current process's page directory and switch back
+     to the kernel-only page directory. *//*
     // PRJ4
   pd = cur->pagedir;
   delete_pages_by_(cur->tid);
     //
  if (pd != NULL)
     {
-      /* Correct ordering here is crucial.  We must set
+      *//* Correct ordering here is crucial.  We must set
          cur->pagedir to NULL before switching page directories,
          so that a timer interrupt can't switch back to the
          process page directory.  We must activate the base page
          directory before destroying the process's page
          directory, or our active page directory will be one
-         that's been freed (and cleared). */
+         that's been freed (and cleared). *//*
       cur->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
   sema_up(&(cur->p_sema));
-  sema_down(&(cur->i_sema));
+  sema_down(&(cur->i_sema));*/
+
 }
 
 /* Sets up the CPU for running user code in the current
@@ -174,6 +270,47 @@ process_activate (void)
   /* Set thread's kernel stack for use in processing
      interrupts. */
   tss_update ();
+}
+// 실행 중인 프로세스의 파일 디스크립터 테이블에
+// 새 파일을 추가하고 새로 할당된 파일 디스크립터 번호를 반환합니다.
+// 파일 커널 자료 구조에 대한 포인터가 NULL이면 -1을 반환합니다.
+int
+process_add_file (struct file *f)
+{
+    struct thread *t;
+    int fd;
+    if (f == NULL)
+        return -1;
+    t = thread_current ();
+    // 동시성 문제에 대해 안전합니다.
+    fd = t->next_fd++;
+    t->fd_table[fd] = f;
+    return fd;
+}
+
+// 실행 중인 프로세스의
+// 파일 디스크럽터 번호 fd에 해당하는 파일 커널 자료 구조를 반환합니다.
+// 표준 입출력, 아직 할당되지 않았거나 이미 닫힌 경우 NULL을 반환합니다.
+struct file *
+process_get_file (int fd)
+{
+    struct thread *t = thread_current ();
+    if (fd <= 1 || t->next_fd <= fd)
+        return NULL;
+    return t->fd_table[fd];
+}
+
+// 실행 중인 프로세스의
+// 파일 디스크립터 번호 fd에 해당하는 파일을 닫습니다.
+// 표준 입출력, 아직 할당되지 않았거나 이미 닫힌 경우 무시합니다.
+void process_close_file (int fd)
+{
+    struct thread *t = thread_current ();
+    if (fd <= 1 || t->next_fd <= fd)
+        return;
+    // file_close는 NULL을 무시합니다.
+    file_close (t->fd_table[fd]);
+    t->fd_table[fd] = NULL;
 }
 
 /* We load ELF binaries.  The following definitions are taken
@@ -244,6 +381,7 @@ static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
+extern struct lock file_lock;
 
 static void
 parse_cmdline(char *cmdline, int *argc_p, char *argv[CMD_ARGC_LIMIT]) {
@@ -327,10 +465,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (t->pagedir == NULL) 
     goto done;
   process_activate ();
-  
-  // SG_PRJ1 TODO_DONE: parse file name
-  // cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
-  //memcpy(cmd_cpy, file_name, strlen(file_name)+1);
+
   strlcpy(cmd_cpy, file_name, 130);
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
   memcpy(t->name, cmd_argv[0], sizeof(t->name)/sizeof(char));
@@ -338,12 +473,16 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Open executable file. */
     lock_acquire(&file_lock);
   file = filesys_open (cmd_argv[0]);
-    lock_release(&file_lock);
-  if (file == NULL) 
+  if (file == NULL)
     {
+      lock_release(&file_lock);
       printf ("load: %s: open failed\n", cmd_argv[0]);
       goto done; 
     }
+    t->run_file = file;
+    file_deny_write (file);
+    lock_release (&file_lock);
+
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
@@ -420,7 +559,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (!setup_stack (esp))
     goto done;
   
-  // SG_PRJ1 TODO_DONE: construct stack
   push_args(cmd_argc, cmd_argv, esp);
 
   /* Start address. */
@@ -429,10 +567,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
-    lock_acquire(&file_lock);
-  file_close (file);
-    lock_release(&file_lock);
-  // free(cmd_cpy);
+    //lock_acquire(&file_lock);
+  //file_close (file);
+    //lock_release(&file_lock);
 
   return success;
 }
@@ -515,9 +652,23 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
            and zero the final PAGE_ZERO_BYTES bytes. */
         size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
+        struct vm_entry *vme = (struct vm_entry *)malloc(sizeof (struct vm_entry));
+        if (vme == NULL)
+            return false;
+
+        memset (vme, 0, sizeof (struct vm_entry));
+        vme->type = VM_BIN;
+        vme->file = file;
+        vme->offset = ofs;
+        vme->read_bytes = page_read_bytes;
+        vme->zero_bytes = page_zero_bytes;
+        vme->writable = writable;
+        vme->vaddr = upage;
+
+        insert_vme (&thread_current ()->vm, vme);
 
         /* Get a page of memory. */
-        uint8_t *kpage = palloc_get_page (PAL_USER);
+  /*      uint8_t *kpage = palloc_get_page (PAL_USER);
         if (kpage == NULL){
             if (file_read(file,
                           cur_frame,
@@ -526,25 +677,26 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
                 insert_page(upage, cur_frame, writable);
             }else PANIC ("load_segment fail");
         } else{
-            /* Load this page. */
+            *//* Load this page. *//*
             if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes){
                 palloc_free_page (kpage);
                 return false;
             }
             memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
-            /* Add the page to the process's address space. */
+            *//* Add the page to the process's address space. *//*
             if (!install_page (upage, kpage, writable)){
                 palloc_free_page (kpage);
                 return false;
             }
             insert_page(upage, kpage, writable);
-        }
+        }*/
 
         /* Advance. */
         read_bytes -= page_read_bytes;
         zero_bytes -= page_zero_bytes;
         upage += PGSIZE;
+        ofs += page_read_bytes;
     }
     return true;
 }
@@ -554,7 +706,37 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp)
 {
-    uint8_t *kpage;
+    struct page *kpage;
+    void *upage = ((uint8_t *) PHYS_BASE) - PGSIZE;
+
+    struct vm_entry *vme = (struct vm_entry *)malloc(sizeof(struct vm_entry));
+    if (vme == NULL)
+        return false;
+
+    kpage = alloc_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL)
+    {
+        kpage->vme = vme;
+        add_page_to_lru_list (kpage);
+
+        if (!install_page (upage, kpage->kaddr, true))
+        {
+            free_page_kaddr (kpage);
+            free (vme);
+            return false;
+        }
+        *esp = PHYS_BASE;
+
+        memset (kpage->vme, 0, sizeof (struct vm_entry));
+        kpage->vme->type = VM_ANON;
+        kpage->vme->vaddr = upage;
+        kpage->vme->writable = true;
+        kpage->vme->is_loaded = true;
+
+        insert_vme (&thread_current ()->vm, kpage->vme);
+    }
+    return true;
+/*    uint8_t *kpage;
     bool success = false;
 
     kpage = palloc_get_page (PAL_USER | PAL_ZERO);
@@ -577,7 +759,8 @@ setup_stack (void **esp)
     success = install_page (((uint8_t *)PHYS_BASE)-PGSIZE, kpage, true);
     insert_page(((uint8_t *)PHYS_BASE)-PGSIZE, kpage, true);
     *esp = PHYS_BASE;
-    return success;
+    return success;*/
+
 }
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
@@ -597,4 +780,120 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
     return (pagedir_get_page (t->pagedir, upage) == NULL
                && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+bool
+handle_mm_fault (struct vm_entry *vme)
+{
+    struct page *kpage;
+    kpage = alloc_page (PAL_USER);
+    ASSERT (kpage != NULL);
+    ASSERT (pg_ofs (kpage->kaddr) == 0);
+    ASSERT (vme != NULL);
+    kpage->vme = vme;
+
+    switch (vme->type)
+    {
+        case VM_BIN:
+        case VM_FILE:
+            if (!load_file (kpage->kaddr, vme) ||
+                !install_page (vme->vaddr, kpage->kaddr, vme->writable))
+            {
+                NOT_REACHED ();
+                free_page_kaddr (kpage);
+                return false;
+            }
+            vme->is_loaded = true;
+            add_page_to_lru_list (kpage);
+            return true;
+        case VM_ANON:
+            swap_in (vme->swap_slot, kpage->kaddr);
+            ASSERT (pg_ofs (kpage->kaddr) == 0);
+            if (!install_page (vme->vaddr, kpage->kaddr, vme->writable))
+            {
+                NOT_REACHED ();
+                free_page_kaddr (kpage);
+                return false;
+            }
+            vme->is_loaded = true;
+            add_page_to_lru_list (kpage);
+            return true;
+        default:
+            NOT_REACHED ();
+    }
+}
+
+struct mmap_file *
+find_mmap_file (int mapid)
+{
+    struct list_elem *e;
+    for (e = list_begin (&thread_current ()->mmap_list);
+         e != list_end (&thread_current ()->mmap_list);
+         e = list_next (e))
+    {
+        struct mmap_file *f = list_entry (e, struct mmap_file, elem);
+        // 같은 것을 찾았으면 바로 반환합니다.
+        if (f->mapid == mapid)
+            return f;
+    }
+    // 찾지 못했습니다.
+    return NULL;
+}
+
+void
+do_mummap (struct mmap_file *mmap_file)
+{
+    ASSERT (mmap_file != NULL);
+
+    struct list_elem *e;
+    for (e = list_begin (&mmap_file->vme_list);
+         e != list_end (&mmap_file->vme_list); )
+    {
+        struct vm_entry *vme = list_entry (e, struct vm_entry, mmap_elem);
+        if (vme->is_loaded &&
+            pagedir_is_dirty(thread_current ()->pagedir, vme->vaddr))
+        {
+            if (file_write_at (vme->file, vme->vaddr, vme->read_bytes, vme->offset)
+                != (int) vme->read_bytes)
+                NOT_REACHED ();
+            free_page_vaddr (vme->vaddr);
+        }
+        vme->is_loaded = false;
+        e = list_remove (e);
+        delete_vme (&thread_current()->vm, vme);
+    }
+    list_remove (&mmap_file->elem);
+    free (mmap_file);
+}
+
+void
+expand_stack (void *addr)
+{
+    struct page *kpage;
+    void *upage = pg_round_down (addr);
+
+    struct vm_entry *vme = (struct vm_entry *)malloc(sizeof(struct vm_entry));
+    if (vme == NULL)
+        return false;
+
+    kpage = alloc_page (PAL_USER | PAL_ZERO);
+    if (kpage != NULL)
+    {
+        kpage->vme = vme;
+        add_page_to_lru_list (kpage);
+
+        if (!install_page (upage, kpage->kaddr, true))
+        {
+            free_page_kaddr (kpage);
+            free (vme);
+            return false;
+        }
+
+        memset (kpage->vme, 0, sizeof (struct vm_entry));
+        kpage->vme->type = VM_ANON;
+        kpage->vme->vaddr = upage;
+        kpage->vme->writable = true;
+        kpage->vme->is_loaded = true;
+
+        insert_vme (&thread_current ()->vm, kpage->vme);
+    }
 }
