@@ -8,7 +8,7 @@
 
 // 8MB
 #define STACK_SIZE_LIMIT (8*1024*1024)
-// #define STACK_SIZE_LIMIT (3*1024*1024)
+
 void exception_init (void);
 void exception_print_stats (void);
 

@@ -9,6 +9,7 @@
 #ifndef USERPROG
 extern bool thread_prior_aging;
 #endif
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -127,6 +128,8 @@ struct thread
 // PRJ4
     void *mbuffer[130];
     uint32_t msize[130];
+
+    struct dir *working_dir;
   };
 
 /* If false (default), use round-robin scheduler.
@@ -176,6 +179,6 @@ void update_recent_cpu(void);
 void increase_cur_recent_cpu(void);
 void thread_aging(void);
 
-unsigned thread_get_ticks ();
+unsigned thread_get_ticks (void);
 
 #endif /* threads/thread.h */

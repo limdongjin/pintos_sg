@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "filesys/directory.h"
 
 #ifdef USERPROG
 
@@ -148,9 +149,9 @@ thread_init(void) {
     initial_thread->recent_cpu = 0;
 
 // PRJ4
-    for(i=0;i<128;i++){
-        initial_thread->mbuffer[i] = NULL;
+    for(i=0;i<130;i++){
         initial_thread->msize[i] = 0;
+        initial_thread->mbuffer[i] = NULL;
     }
 }
 
@@ -297,6 +298,10 @@ thread_create(const char *name, int priority,
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
 
+    if(thread_current()->working_dir){
+        t->working_dir = dir_reopen(thread_current()->working_dir);
+    }
+
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);
     kf->eip = NULL;
@@ -314,8 +319,11 @@ thread_create(const char *name, int priority,
 
     /* Add to run queue. */
     thread_unblock(t);
+//#ifndef USERPROG
     if(exist_high_priority_than_cur())
-        thread_yield();
+//#endif
+    thread_yield();
+
     return tid;
 }
 
@@ -650,6 +658,7 @@ init_thread(struct thread *t, const char *name, int priority) {
     t->nice = running_thread()->nice;
     t->recent_cpu = running_thread()->recent_cpu;
 
+    t->working_dir = NULL;
 
     list_init(&t->lock_list);
     t->donating_lock = NULL;

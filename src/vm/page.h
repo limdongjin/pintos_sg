@@ -23,7 +23,7 @@ struct page_entry {
 
 struct lock page_lock;
 
-void init_page_table ();
+void init_page_table (void);
 void insert_page (void *va, void *pa, bool writable);
 bool delete_pages_by_ (uint32_t pid);
 void set_page_for_swap_in (void *va, void *pa, uint32_t pid);

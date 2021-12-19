@@ -139,7 +139,7 @@ page_fault (struct intr_frame *f)
   void* pa;
   uint32_t* pd;
   uint32_t va;
- int i;
+  uint32_t i;
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
      data.  It is not necessarily the address of the instruction
@@ -168,8 +168,8 @@ page_fault (struct intr_frame *f)
   }
 
      page = get_page_by_(fault_addr, thread_tid());
-  // case. can't write non writable file
-  if (page != NULL && write == true && page->writable == false) {
+    // case. can't write non writable file
+    if (page != NULL && write == true && page->writable == false) {
         if (lock_held_by_current_thread (&file_lock))
             lock_release (&file_lock);
         exit(-1);
@@ -197,7 +197,8 @@ page_fault (struct intr_frame *f)
     // case. Stack Growth
     va = ((uint32_t) fault_addr>>12)<<12;
     // i < page_num
-    for (i = 0; i < (0xc0000000 -(uint32_t)va)/(4*1024); i++,va+=(4*1024)) {
+    uint32_t pagenum = (0xc0000000 - (uint32_t)va)/4096;
+    for (i = 0; i < pagenum; i++,va+=4096) {
         page = get_page_by_(va, t->tid);
         if (page == NULL) {
             while ((pa= palloc_get_page(PAL_USER)) == NULL) {
@@ -210,6 +211,14 @@ page_fault (struct intr_frame *f)
         else if (page->swap_idx != -1)
             swap_in (va, page->swap_idx);
     }
+    
+    ////
+//    printf ("Page fault at %p: %s error %s page in %s context.\n",
+//          fault_addr,
+//          not_present ? "not present" : "rights violation",
+//          write ? "writing" : "reading",
+//          user ? "user" : "kernel");
+//    kill (f);
     return;
 }
 

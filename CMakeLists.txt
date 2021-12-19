@@ -351,4 +351,4 @@ add_executable(pintos_sg
         src/vm/page.h
         src/vm/page.c
         src/vm/frame.h
-        src/vm/frame.c src/vm/swap.c src/vm/swap.h)
+        src/vm/frame.c src/vm/swap.c src/vm/swap.h src/filesys/buffer-cache.c src/filesys/buffer-cache.h)

@@ -140,8 +140,8 @@ process_exit (void)
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
     // PRJ4
-    pd = cur->pagedir;
-    delete_pages_by_(cur->tid);
+  pd = cur->pagedir;
+  delete_pages_by_(cur->tid);
     //
  if (pd != NULL)
     {
@@ -320,8 +320,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
   // NOTE. cmd_argv's component is cmd_cpy's relative pointer that passed by strtok_r(..) 
   // SO, you MUST ONLY free(cmd_cpy)
   char* cmd_argv[CMD_ARGC_LIMIT]; 
-  char* cmd_cpy = NULL;
-  
+  //char* cmd_cpy = NULL;
+  char cmd_cpy[130];
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -329,9 +329,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   process_activate ();
   
   // SG_PRJ1 TODO_DONE: parse file name
-  cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
-  memcpy(cmd_cpy, file_name, strlen(file_name)+1);
-
+  // cmd_cpy = (char*)malloc(sizeof(char)*strlen(file_name)+1);
+  //memcpy(cmd_cpy, file_name, strlen(file_name)+1);
+  strlcpy(cmd_cpy, file_name, 130);
   parse_cmdline(cmd_cpy, &cmd_argc, cmd_argv);
   memcpy(t->name, cmd_argv[0], sizeof(t->name)/sizeof(char));
 
@@ -432,7 +432,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     lock_acquire(&file_lock);
   file_close (file);
     lock_release(&file_lock);
-  free(cmd_cpy);
+  // free(cmd_cpy);
 
   return success;
 }

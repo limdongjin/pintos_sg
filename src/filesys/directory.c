@@ -5,6 +5,7 @@
 #include "filesys/filesys.h"
 #include "filesys/inode.h"
 #include "threads/malloc.h"
+#include "vm/frame.h"
 
 /* A directory. */
 struct dir 
@@ -26,7 +27,9 @@ struct dir_entry
 bool
 dir_create (block_sector_t sector, size_t entry_cnt)
 {
-  return inode_create (sector, entry_cnt * sizeof (struct dir_entry));
+  return inode_create (sector,
+                       entry_cnt * sizeof (struct dir_entry),
+                       1);
 }
 
 /* Opens and returns the directory for the given INODE, of which
@@ -34,7 +37,10 @@ dir_create (block_sector_t sector, size_t entry_cnt)
 struct dir *
 dir_open (struct inode *inode) 
 {
-  struct dir *dir = calloc (1, sizeof *dir);
+  struct dir *dir = NULL;
+  while((dir = calloc (1, sizeof *dir)) == NULL)
+	evict_frame();
+
   if (inode != NULL && dir != NULL)
     {
       dir->inode = inode;
@@ -192,6 +198,9 @@ dir_remove (struct dir *dir, const char *name)
   ASSERT (dir != NULL);
   ASSERT (name != NULL);
 
+  if(!strcmp(name, ".") || !strcmp(name, ".."))
+      return false;
+
   /* Find directory entry. */
   if (!lookup (dir, name, &e, &ofs))
     goto done;
@@ -226,7 +235,7 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1])
   while (inode_read_at (dir->inode, &e, sizeof e, dir->pos) == sizeof e) 
     {
       dir->pos += sizeof e;
-      if (e.in_use)
+      if (e.in_use && strcmp(e.name, ".") && strcmp(e.name, ".."))
         {
           strlcpy (name, e.name, NAME_MAX + 1);
           return true;

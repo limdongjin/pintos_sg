@@ -18,6 +18,13 @@
 #include "vm/swap.h"
 #include "vm/frame.h"
 
+#define _PRINT_DEBUG(str, )
+#ifdef DEBUG
+  #define DEBUG_PRINT(fmt, args...) fprintf(stderr, "DEBUG: %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args)
+#else
+  #define DEBUG_PRINT(fmt, args...) /* Don't do anything in release builds */
+#endif
+
 struct file
 {
     struct inode *inode;        /* File's inode. */
@@ -40,16 +47,20 @@ syscall_init(void) {
 
 static bool
 check_user_ptr(const void *user_ptr) {
+    DEBUG_PRINT("START");
     if(!is_user_vaddr(user_ptr) ||
       get_page_by_(((uint32_t) user_ptr >> 12) << 12, thread_tid()) == NULL)
     {
+        DEBUG_PRINT("FAIL : Invalid");
 	    exit(-1);
     }
+    DEBUG_PRINT("END");
     return true;
 }
 
 static bool
 get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
+    DEBUG_PRINT("START\n");
 // scope : get_arg_and_verify(...){ ... }
 #define SAVE_ARG_AND_VERIFY(IDX)                       \
    ({                                                  \
@@ -107,12 +118,13 @@ get_arg_and_verify(void *esp, void *arg[SYSCALL_MAX_ARGC]) {
 	    break;
     }
 #undef SAVE_ARG_AND_VERIFY
-
+    DEBUG_PRINT("END\n");
     return true;
 }
 
 static void
 syscall_handler(struct intr_frame *f UNUSED) {
+    DEBUG_PRINT("START\n");
     void *syscall_arg[SYSCALL_MAX_ARGC] = {NULL,};
     bool is_success;
 
@@ -124,6 +136,7 @@ syscall_handler(struct intr_frame *f UNUSED) {
     is_success = get_arg_and_verify(f->esp, syscall_arg);
 
     if (!is_success) {
+        DEBUG_PRINT("FAIL : verify fail\n");
         f->eax = ABNORMAL_EXIT_CODE;
         abnormal_exit();
         return;
@@ -216,7 +229,7 @@ syscall_handler(struct intr_frame *f UNUSED) {
 #undef CHAR_PTR_ARG
 #undef VOID_PTR_ARG
 #undef UNSIGNED_ARG
-
+    DEBUG_PRINT("END\n");
 }
 
 
@@ -239,6 +252,7 @@ halt(void) {
 
 void
 exit(int status) {
+    DEBUG_PRINT("START\n");
     int i;
     struct list_elem* e = NULL;
 
@@ -267,17 +281,18 @@ exit(int status) {
 
 int
 write(int fd, const void *buffer, unsigned size) {
-    if(fd == 0 || fd == 2) abnormal_exit();
+    DEBUG_PRINT("START\n");
+    if(fd == 0 || fd == 2) {
+        DEBUG_PRINT("FAIL : since fd == 0 or fd == 2\n");
+        abnormal_exit();
+    }
     struct file* cfp;
-	    #ifdef DEBUG
-	printf("write start\n");
-#endif
 
     check_user_ptr(buffer);
     int ret;
     bool success = true;
-
     lock_acquire(&file_lock);
+    DEBUG_PRINT("lock acquire\n");
     pinning(buffer, size);
     if (fd == 1) { // console
         putbuf((char *) buffer, size);
@@ -293,20 +308,15 @@ write(int fd, const void *buffer, unsigned size) {
      cfp = thread_current()->fd_table[fd];
      if(cfp->deny_write) file_deny_write(cfp);
      ret = file_write(thread_current()->fd_table[fd], buffer, size);
-    unpinning(buffer, size);
-  write_done:
      unpinning(buffer, size);
+  write_done:
      lock_release(&file_lock);
-     if(!success) {
-	    #ifdef DEBUG
-	printf("write fail\n");
-#endif
-	     exit(-1);
-     }
-	    #ifdef DEBUG
-	printf("write success end\n");
-#endif
+    DEBUG_PRINT("lock release\n");
 
+    if(!success) {
+        DEBUG_PRINT("FAIL : write result is invalid\n");
+        exit(-1);
+    }
      return ret;
 }
 
@@ -316,10 +326,6 @@ exec(const char *cmd_line) {
     struct file *fp;
     int i = 0;
     pid_t ret;
-	    #ifdef DEBUG
-	printf("exec start\n");
-#endif
-
 
     while(cmd_line[i] != ' ' && (file_name[i] = cmd_line[i]) != '\0') i++;
     file_name[i] = '\0';
@@ -346,28 +352,27 @@ wait(pid_t pid) {
 
 bool
 create(const char *file, unsigned initial_size) {
- #ifdef DEBUG
-	printf("create start\n");
-#endif
+    DEBUG_PRINT("START");
+     if(file == NULL) {
+         DEBUG_PRINT("FAIL : file == NULL ");
+         exit(-1);
+     }
 
-     if(file == NULL) exit(-1);
     check_user_ptr(file);
-
     lock_acquire(&file_lock);
+
+    DEBUG_PRINT("lock acquire\n");
     bool ret = filesys_create(file, initial_size);
+
     lock_release(&file_lock);
 
+    DEBUG_PRINT("lock release\n");
+    DEBUG_PRINT("END\n");
     return ret;
 }
 
 bool
 remove(const char *file) {
- #ifdef DEBUG
-	printf("remove start\n");
-#endif
-
-
-
      if(file == NULL) exit(-1);
      check_user_ptr(file);
 
@@ -380,11 +385,6 @@ remove(const char *file) {
 
 int
 open(const char *file UNUSED) {
- #ifdef DEBUG
-	printf("open start\n");
-#endif
-
-
     if(file == NULL) {
 	    exit(-1);
     }
@@ -410,11 +410,6 @@ open(const char *file UNUSED) {
 
 int
 filesize(int fd UNUSED) {
- #ifdef DEBUG
-	printf("filesize start\n");
-#endif
-
-
     lock_acquire(&file_lock);
     if(thread_current()->fd_table[fd] == NULL) {
         lock_release(&file_lock);
@@ -428,11 +423,6 @@ filesize(int fd UNUSED) {
 
 int
 read(int fd, void *buffer, unsigned size) {
- #ifdef DEBUG
-	printf("read start\n");
-#endif
-
-
     unsigned i = 0;
     bool success = true;
     check_user_ptr(buffer);
@@ -461,11 +451,6 @@ read(int fd, void *buffer, unsigned size) {
 
 void
 seek(int fd UNUSED, unsigned position UNUSED) {
- #ifdef DEBUG
-	printf("seek start\n");
-#endif
-
-
     if(fd >= 128) exit(-1);
 
     lock_acquire(&file_lock);
@@ -480,11 +465,6 @@ seek(int fd UNUSED, unsigned position UNUSED) {
 
 unsigned
 tell(int fd UNUSED) {
- #ifdef DEBUG
-	printf("tell start\n");
-#endif
-
-
     if(fd >= 128) exit(-1);
     lock_acquire(&file_lock);
     if(thread_current()->fd_table[fd] == NULL) {
@@ -498,11 +478,6 @@ tell(int fd UNUSED) {
 
 void
 close(int fd UNUSED) {
- #ifdef DEBUG
-	printf("close start\n");
-#endif
-
-
     if(fd >= 128) exit(-1);
 
     lock_acquire(&file_lock);
@@ -522,11 +497,6 @@ close(int fd UNUSED) {
 
 mapid_t
 mmap(int fd UNUSED, void *addr UNUSED) {
- #ifdef DEBUG
-	printf("mmap start\n");
-#endif
-
-
     lock_acquire (&file_lock);
 
     mapid_t ret = fd;
@@ -574,21 +544,11 @@ mmap(int fd UNUSED, void *addr UNUSED) {
     thread_current()->mbuffer[fd] = addr;
 DONE:
     lock_release (&file_lock);
- #ifdef DEBUG
-	printf("mmap success end\n");
-#endif
-
-
     return ret;
 }
 
 void
 munmap(mapid_t t UNUSED) {
- #ifdef DEBUG
-	printf("munmap start\n");
-#endif
-
-
     if(t < 0) exit(-1);
 
     void *buffer = thread_current()->mbuffer[t];
@@ -601,11 +561,6 @@ munmap(mapid_t t UNUSED) {
     file_write (thread_current()->fd_table[t], buffer, size);
 
     unpinning(buffer, size);
- #ifdef DEBUG
-	printf("munmap success end\n");
-#endif
-
-
     lock_release (&file_lock);
 }
 
