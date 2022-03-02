@@ -19,10 +19,9 @@
 
 #include "devices/input.h"
 
-#include "vm/page.h"
-#include "vm/swap.h"
-#include "vm/frame.h"
-
+//#include "vm/page.h"
+//#include "vm/swap.h"
+//#include "vm/frame.h"
 
 #ifndef DEBUG_PRINT1
  #ifdef DEBUG1
@@ -146,12 +145,12 @@ check_address (void *addr, void *esp)
     ))
         exit (-1);
 
-    if (!find_vme (addr))
-    {
-        if (!verify_stack ((int32_t) addr, (int32_t) esp))
-            exit (-1);
-        expand_stack (addr);
-    }
+    //if (!find_vme (addr))
+    //{
+    //    if (!verify_stack ((int32_t) addr, (int32_t) esp))
+    //        exit (-1);
+    //    expand_stack (addr);
+    //}
 }
 
 // 4 바이트 값에 대한 안전한 포인터인지 검사합니다.
@@ -273,7 +272,7 @@ get_user_strings (char **args, int flag, void *esp)
     get_single_user_string (args, flag, 2);
     get_single_user_string (args, flag, 3);
 }
-
+/*
 static void
 pin_address (void *addr, bool write)
 {
@@ -303,7 +302,7 @@ unpin_string (const char *begin, const char *end)
     for (; begin < end; begin += PGSIZE)
         unpin_address (begin);
 }
-
+*/
 
 static void
 syscall_handler(struct intr_frame *f UNUSED) {
@@ -458,12 +457,12 @@ syscall_handler(struct intr_frame *f UNUSED) {
             f->eax = inumber ((int) args[0]);
             // f->eax = inumber(INT_ARG(0));
             break;
-        case SYS_FIBONACCI:
+        /*case SYS_FIBONACCI:
             f->eax = fibonacci(INT_ARG(0));
             break;
         case SYS_MAX_OF_FOUR_INT:
             f->eax = max_of_four_int(INT_ARG(0), INT_ARG(1), INT_ARG(2), INT_ARG(3));
-            break;
+            break;*/
         default:
             // printf("unsupported syscall\n");
             exit(-1);
@@ -526,8 +525,27 @@ exit(int status) {
 
 int
 write(int fd, const void *buffer, unsigned size) {
-    DEBUG_PRINT1("START\n");
-    if(fd == 0 || fd == 2) {
+    // DEBUG_PRINT1("START\n");
+
+    struct file *f;
+    lock_acquire (&file_lock);
+    if (fd == STDOUT_FILENO)
+    {
+        putbuf (buffer, size);
+        lock_release (&file_lock);
+        return size;
+    }
+    if ((f = process_get_file (fd)) == NULL)
+    {
+        lock_release (&file_lock);
+        return 0;
+    }
+    size = file_write (f, buffer, size);
+    lock_release (&file_lock);
+
+    return size;
+
+    /*if(fd == 0 || fd == 2) {
         DEBUG_PRINT1("FAIL : since fd == 0 or fd == 2\n");
         abnormal_exit();
     }
@@ -564,7 +582,7 @@ write(int fd, const void *buffer, unsigned size) {
         exit(-1);
     }
     DEBUG_PRINT1("END");
-     return ret;
+     return ret;*/
 }
 
 pid_t
@@ -998,7 +1016,7 @@ munmap(mapid_t t UNUSED) {
     DEBUG_PRINT1("lock release\n");
      */
 
-    struct mmap_file *f = find_mmap_file (mapid);
+    struct mmap_file *f = find_mmap_file (t);
     if (!f)
         return;
     do_mummap (f);
@@ -1011,15 +1029,15 @@ chdir(const char *dir UNUSED) {
     /*
     return unsupported_func();*/
     char path[PATH_MAX_LEN + 1];
-    strlcpy (path, path_o, PATH_MAX_LEN);
+    strlcpy (path, dir, PATH_MAX_LEN);
     strlcat (path, "/0", PATH_MAX_LEN);
 
     char name[PATH_MAX_LEN + 1];
-    struct dir *dir = parse_path (path, name);
-    if (!dir)
+    struct dir *parsed_dir = parse_path (path, name);
+    if (!parsed_dir)
         return false;
     dir_close (thread_current ()->working_dir);
-    thread_current ()->working_dir = dir;
+    thread_current ()->working_dir = parsed_dir;
     return true;
 }
 

@@ -22,7 +22,7 @@
 #include "threads/palloc.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
-// #include "vm/page.h"
+#include "vm/page.h"
 #include "vm/swap.h"
 #include "vm/frame.h"
 #ifdef USERPROG

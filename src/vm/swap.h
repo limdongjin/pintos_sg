@@ -1,4 +1,4 @@
-#ifndef VM_SWAP_H
+/*#ifndef VM_SWAP_H
 #define VM_SWAP_H
 
 #include <stddef.h>
@@ -8,7 +8,7 @@ void swap_in (size_t, void *);
 void swap_clear (size_t);
 size_t swap_out (void *);
 
-#endif
+#endif*/
 /*
 #ifndef VM_SWAP_H
 #define VM_SWAP_H

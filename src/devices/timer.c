@@ -166,6 +166,30 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+    ticks++;
+    thread_tick ();
+
+    if (thread_mlfqs)
+    {
+        increase_cur_recent_cpu();
+        // mlfqs_increment();
+        if (ticks % 4 == 0)
+        {
+            mlfqs_priority(thread_current());
+        }
+        if (ticks % 100 == 0)
+        {
+            update_recent_cpu();
+            // mlfqs_recalc();
+        }
+    }
+
+    // 미리 계산해 둔 스레드 깨우기 시간이 되었을 경우라면
+    if (get_next_tick_to_awake() <= ticks)
+        thread_wakeup(ticks);
+        // 깨워야 할 스레드를 깨우고 다음 깨우기 시간을 새로 계산합니다.
+        // thread_awake (ticks);
+   /*
     bool flag = thread_mlfqs;
 #ifndef USERPROG
   flag = flag || thread_prior_aging;
@@ -186,7 +210,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
   }
   if(timer_ticks() % 4 == 0) thread_aging();
 
-  thread_tick();
+  thread_tick();*/
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

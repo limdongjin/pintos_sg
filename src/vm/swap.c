@@ -1,3 +1,4 @@
+/*
 #include "vm/swap.h"
 #include <bitmap.h>
 #include "threads/synch.h"
@@ -84,6 +85,7 @@ swap_out (void *kaddr)
     return swap_index + 1;
 }
 
+*/
 /*
 #include "swap.h"
 #include "vm/frame.h"
@@ -99,8 +101,12 @@ swap_out (void *kaddr)
 
 #define SWAP_SIZE (block_size (swap_block) / (PGSIZE/BLOCK_SECTOR_SIZE))
 
+*//*
+
 */
 /* Definitions of Functions of vm/swap.h *//*
+*/
+/*
 
 
 void swap_init (void) {
@@ -168,4 +174,5 @@ void swap_free (uint32_t swap_idx) {
     lock_acquire (&swap_lock);
     is_swapped[swap_idx] = false;
     lock_release (&swap_lock);
-}*/
+}*//*
+

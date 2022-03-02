@@ -1,3 +1,4 @@
+/*
 #include "page.h"
 #include "threads/vaddr.h"
 #include "threads/thread.h"
@@ -198,6 +199,7 @@ __free_page (struct page *page)
     palloc_free_page (page->kaddr);
     free (page);
 }
+*/
 
 /*
 #include "page.h"

@@ -1,3 +1,4 @@
+/*
 #ifndef VM_PAGE_H
 #define VM_PAGE_H
 
@@ -69,6 +70,7 @@ void __free_page (struct page *);
 
 
 
+*/
 /*
 struct page_entry {
     uint32_t vaddr;
@@ -94,6 +96,7 @@ void set_page_for_swap_in (void *va, void *pa, uint32_t pid);
 uint32_t calc_page_number (void *);
 struct page_entry *get_page_by_ (void *va, uint32_t pid);
 struct hash* get_page_table(void);
-*/
+*//*
 
-#endif
+
+#endif*/

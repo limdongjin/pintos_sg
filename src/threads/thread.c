@@ -257,6 +257,18 @@ update_load_avg ()
   if(load_avg < 0) load_avg = 0;
 }
 
+void mlfqs_priority (struct thread *t)
+{
+    if (t == idle_thread)
+        return;
+    //int priority = int_to_fp (PRI_MAX);
+    //int p2 = div_mixed (t->recent_cpu, 4);
+    //int p3 = mult_mixed (int_to_fp (t->nice), 2);
+    //priority = sub_fp (priority, p2);
+    //priority = sub_fp (priority, p3);
+    t->priority = calc_new_priority(t->recent_cpu, t->nice);
+}
+
 void
 update_recent_cpu () // mlfqs_recalc
 {
@@ -269,7 +281,7 @@ update_recent_cpu () // mlfqs_recalc
       e = list_next(e))
   {
       t = list_entry(e, struct thread, allelem);
-      // if(t == idle_thread) continue;
+      if(t == idle_thread) continue;
       t->recent_cpu = calc_new_recent_cpu(t->recent_cpu, t->nice, load_avg);
       t->priority = calc_new_priority(t->recent_cpu, t->nice);
   }

@@ -1,3 +1,4 @@
+/*
 #include "vm/frame.h"
 #include "threads/synch.h"
 #include "userprog/pagedir.h"
@@ -111,6 +112,7 @@ get_victim (void)
     return page;
 }
 
+*/
 /*
 #include "page.h"
 #include "frame.h"
@@ -121,14 +123,22 @@ get_victim (void)
 #include "threads/vaddr.h"
 #include "threads/interrupt.h"
 
+*//*
+
 */
 /* Declarations of Helper Functions *//*
+*/
+/*
 
 
 static bool pin_and_swap (void *va, uint32_t pid);
 
+*//*
+
 */
 /* Definitions of Functions of vm/frame.h *//*
+*/
+/*
 
 
 void pinning (void *buffer, unsigned size) {
@@ -182,8 +192,12 @@ evict_frame(void) {
     return true;
 }
 
+*//*
+
 */
 /* Definitions of Helper Functions *//*
+*/
+/*
 
 
 static bool
@@ -195,4 +209,5 @@ pin_and_swap (void *va, uint32_t pid) {
 
     swap_in (va, page->swap_idx);
     return true;
-}*/
+}*//*
+

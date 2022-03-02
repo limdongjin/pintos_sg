@@ -37,9 +37,8 @@ dir_create (block_sector_t sector, size_t entry_cnt)
 struct dir *
 dir_open (struct inode *inode) 
 {
-  struct dir *dir = NULL;
-  while((dir = calloc (1, sizeof *dir)) == NULL)
-	evict_frame();
+  struct dir *dir = calloc (1, sizeof *dir);
+  // evict_frame();
 
   if (inode != NULL && dir != NULL)
     {

@@ -448,8 +448,8 @@ cond_waiters_compare (const struct list_elem *a,
 
     ta = list_entry (list_front (&sa->semaphore.waiters), struct thread, elem);
     tb = list_entry (list_front (&sb->semaphore.waiters), struct thread, elem);
-
-    return thread_compare_priority (ta, tb);
+    return ta->priority > tb->priority;
+    // return ,hread_compare_priority (ta, tb);
 }
 /* If any threads are waiting on COND (protected by LOCK), then
    this function signals one of them to wake up from its wait.

@@ -205,8 +205,8 @@ inode_open (block_sector_t sector)
     }
 
   /* Allocate memory. */
-  while((inode = malloc (sizeof *inode)) == NULL) //
-	  evict_frame(); //
+  inode = malloc (sizeof *inode);
+//	  evict_frame(); //
   if (inode == NULL)
     return NULL;
 
