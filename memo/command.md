@@ -38,3 +38,20 @@
 // but if you wand quick debugging.
 15. alias pintos-prj1-prepare, pintos-gdb-echo memo/alias.md
 16. just run two command.
+
+# For Fintos..
+export PATH="$PATH:/home/imdongjin/pintos/src/utils"
+export PATH="$PATH:/home/imdongjin/CLionProjects/pintos_sg/src/utils"
+alias gobuild="cd /home/imdongjin/pintos/src/threads/build"
+alias gohomep="cd /home/imdongjin/pintos"
+export PATH="$PATH:/usr/local/bin"
+
+alias pintos-prj1-prepare="rm -f filesys.dsk && pintos-mkdisk filesys.dsk --filesys-size=2 && pintos -f -q && pintos -p ../../examples/echo -a  echo -- -q"
+
+alias pintos-prj2-prepare="rm -f filesys.dsk && pintos-mkdisk filesys.dsk --filesys-size=2 && pintos -f -q && pintos -p tests/userprog/read-normal -a  read-normal -- -q && pintos -p ../../tests/userprog/sample.txt -a sample.txt -- -q"
+alias pintos-prj2-gdb-go="pintos-prj2-prepare && pintos --gdb -- -q -f extract run read-normal"
+
+alias pintos-gdb-echo="pintos --gdb -- -q run 'echo x'"
+alias pintos-echo="pintos -q run 'echo xhello world good go  go'"
+alias pintos-1-go="pintos-prj1-prepare && pintos-echo"
+alias pintos-1-go-gdb="pintos-prj1-prepare && pintos --gdb -- -q run 'echo hello world good'"
